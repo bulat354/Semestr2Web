@@ -3,7 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RickAndMortyLibrary", "RickAndMortyLibrary\RickAndMortyLibrary.csproj", "{4A5521D3-3DDD-4A47-B1D0-78101BFAF276}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RickAndMortyLibrary", "RickAndMortyLibrary\RickAndMortyLibrary.csproj", "{4A5521D3-3DDD-4A47-B1D0-78101BFAF276}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestConsole", "TestConsole\TestConsole.csproj", "{1D74D66C-62A0-41BC-B1BA-9DC51143BA39}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DPTPLibrary", "DPTPListener\DPTPLibrary.csproj", "{35B5F563-6865-40BC-BEDB-CE1B1798B3E9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyProtocol", "MyProtocol\MyProtocol.csproj", "{56CE2B41-BD79-40A6-82B9-7D24D02A28A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +21,18 @@ Global
 		{4A5521D3-3DDD-4A47-B1D0-78101BFAF276}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4A5521D3-3DDD-4A47-B1D0-78101BFAF276}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A5521D3-3DDD-4A47-B1D0-78101BFAF276}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D74D66C-62A0-41BC-B1BA-9DC51143BA39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D74D66C-62A0-41BC-B1BA-9DC51143BA39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D74D66C-62A0-41BC-B1BA-9DC51143BA39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D74D66C-62A0-41BC-B1BA-9DC51143BA39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35B5F563-6865-40BC-BEDB-CE1B1798B3E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35B5F563-6865-40BC-BEDB-CE1B1798B3E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35B5F563-6865-40BC-BEDB-CE1B1798B3E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35B5F563-6865-40BC-BEDB-CE1B1798B3E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56CE2B41-BD79-40A6-82B9-7D24D02A28A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56CE2B41-BD79-40A6-82B9-7D24D02A28A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56CE2B41-BD79-40A6-82B9-7D24D02A28A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56CE2B41-BD79-40A6-82B9-7D24D02A28A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
