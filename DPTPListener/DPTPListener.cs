@@ -12,6 +12,11 @@ namespace DPTPLibrary
     {
         private TcpListener _listener;
         
+        public DPTPListener(string localaddr, int port)
+        {
+            _listener = new TcpListener(IPAddress.Parse(localaddr), port);
+        }
+
         public DPTPListener(IPAddress localaddr, int port)
         {
             _listener = new TcpListener(localaddr, port);

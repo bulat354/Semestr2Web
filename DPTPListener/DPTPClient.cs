@@ -13,6 +13,8 @@ namespace DPTPLibrary
         private TcpClient _client;
         private NetworkStream _stream;
 
+        public bool IsConnected { get { return _client.Connected; } }
+
         public DPTPClient(string hostname, int port)
         {
             _client = new TcpClient(hostname, port);
