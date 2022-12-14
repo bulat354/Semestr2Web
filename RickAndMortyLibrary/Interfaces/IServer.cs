@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DPTPLibrary;
+using RickAndMortyLibrary.Common;
+using RickAndMortyLibrary.Remote;
 
 namespace RickAndMortyLibrary
 {
@@ -12,15 +14,6 @@ namespace RickAndMortyLibrary
     /// </summary>
     public interface IServer
     {
-        void Initialize(IMainUI ui);
-
-        void Start();
-
-        Task WaitForPlayers();
-
-        void StartGame();
-        void CloseGame();
-
-        void Close();
+        Task Start(IMainUI ui);
     }
 }

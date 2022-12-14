@@ -12,6 +12,8 @@ namespace RickAndMortyLibrary.Local
     /// </summary>
     internal abstract class GameBase
     {
+        public TaskCompletionSource GameOverEvent = new TaskCompletionSource();
+
         private IPlayer[] _players;
 
         private ICardsPack<ActionCard> actionCardsPack;

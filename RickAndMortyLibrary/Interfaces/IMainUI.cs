@@ -14,5 +14,8 @@ namespace RickAndMortyLibrary
     {
         Task WaitForCreating(out string ipAddress, out int port, out GameType gameType, out string userName);
         Task WaitForConnecting(out string ipAddress, out int port, out string userName);
+
+        Task<IPlayerUI> ToHostPlayerScreen();
+        Task<IPlayerUI> ToLocalPlayerScreen();
     }
 }

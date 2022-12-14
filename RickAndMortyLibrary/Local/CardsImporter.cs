@@ -21,6 +21,13 @@ namespace RickAndMortyLibrary.Local
             allActionCards = new ActionCard[0];
             allCharacterCards = new CharacterCard[0];
             allPersonalityCards = new PersonalityCard[0];
+
+            Import();
+        }
+
+        private static void Import()
+        {
+
         }
 
         public static ICardsPack<ActionCard> GetActionCardsPack()

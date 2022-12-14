@@ -5,10 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RickAndMortyLibrary.Remote
+namespace RickAndMortyLibrary.Local
 {
     internal class LocalPlayer : IPlayer
     {
-        public string UserName { get; }
+        public string UserName { get; set; }
+
+        public Task GetReady()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
