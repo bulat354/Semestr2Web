@@ -37,5 +37,11 @@ namespace RickAndMortyLibrary.Common
 
         void Win();
         void Lose();
+
+        #region Advanced game features
+        Character GetCharacter();
+        void SetCharacter(Character character);
+        Person GetPerson();
+        #endregion
     }
 }

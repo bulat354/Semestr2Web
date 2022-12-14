@@ -7,34 +7,80 @@ using System.Threading.Tasks;
 
 namespace RickAndMortyLibrary.Local
 {
-    internal class AdvancedGame : GameBase
+    internal class AdvancedGame : NormalGame
     {
-        public override void StartGame()
+        protected Person lastFailer;
+        protected Character[] playerCharacters
         {
-            throw new NotImplementedException();
+            get
+            {
+                return _players.Select(x => x.GetCharacter()).ToArray();
+            }
         }
 
-        internal override void Invoke(ActionCard action)
+        protected override void LayCharacters()
         {
-            throw new NotImplementedException();
+            base.LayCharacters();
+
+            var playerPack = CardsImporter.GetPlayerPersonalityCardsPack();
+            playerPack.Shuffle();
+
+            _players.ForEach(x => x.SetCharacter(new Character()
+            {
+                Card = characterCardsPack.Pop(),
+                Personality = playerPack.Pop()
+            }));
         }
 
-        internal override void ReactToKill(Character character)
+        protected override void CheckForWinners()
         {
-            throw new NotImplementedException();
+            // если убили 4 друзей, то проигрывает команда человека, который убил 4-го
+            if (fails == 4)
+            {
+                _players.ForEach(x =>
+                {
+                    if (x.GetPerson() == lastFailer)
+                        x.Lose();
+                    else
+                        x.Win();
+                });
+            }
+            // если после финального раунда или после голосования
+            // среди персонажей на столе есть паразит, то выигрывают паразиты
+            else if (characters.Any(x => IsCharacterParasite(x)))
+            {
+                _players.ForEach(x =>
+                {
+                    if (IsPlayerParasite(x))
+                        x.Win();
+                    else
+                        x.Lose();
+                });
+            }
+            // иначе пусть решится все за обеденным столом!
+            else
+            {
+                var task = StartDiningTable();
+                task.Wait();
+                var winSide = task.Result;
+
+                _players.ForEach(x =>
+                {
+                    if (x.GetPerson() == winSide)
+                        x.Win();
+                    else
+                        x.Lose();
+                });
+            }
         }
 
-        internal override void StartFinalRound()
+        protected bool IsPlayerParasite(IPlayer player)
         {
-            throw new NotImplementedException();
+            return player.GetPerson() == Person.Parasite;
         }
 
-        internal override void StartRound()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal override void StartTurn()
+        // начинает фазу обеденного стола, возвращает сторону победивших
+        protected async Task<Person> StartDiningTable()
         {
             throw new NotImplementedException();
         }

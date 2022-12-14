@@ -12,6 +12,8 @@ namespace RickAndMortyLibrary.Local
         protected CancellationTokenSource stopGame;
         protected CancellationTokenSource stopWaitingVoting;
 
+        protected int fails;
+
         public async override void StartGame()
         {
             // токен для остановки игры
@@ -46,8 +48,8 @@ namespace RickAndMortyLibrary.Local
                     break;
                 }
 
-                // если на столе остались персонажи
-                if (characters.Count > 0)
+                // если на столе остались персонажи или застрелили меньше четырех друзей
+                if (characters.Count > 0 || fails < 4)
                 {
                     // начинаем раунд
                     if (characterCardsPack.Count() > 0)
@@ -132,7 +134,7 @@ namespace RickAndMortyLibrary.Local
         // объявляет победителей
         protected virtual void CheckForWinners()
         { 
-            if (characters.Any(x => IsCharacterParasite(x)))
+            if (fails == 4 || characters.Any(x => IsCharacterParasite(x)))
             {
                 _players.ForEach(x => x.Lose());
             }
@@ -146,7 +148,7 @@ namespace RickAndMortyLibrary.Local
         // проверяет персонажа на паразита
         protected bool IsCharacterParasite(Character character)
         {
-            throw new NotImplementedException();
+            return character.Personality.Person == Person.Parasite;
         }
 
         // начинает раунд

@@ -13,6 +13,8 @@ namespace RickAndMortyLibrary.Common
     {
         public static string BackImagePath { get; }
 
+        public readonly Person Person;
+
         public PersonalityCard(string name, string imagePath) : base(name, imagePath, CardColor.None, 1)
         {
         }
