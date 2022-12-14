@@ -14,6 +14,7 @@ namespace RickAndMortyLibrary.Messages
         public bool IsRequest { get; set; }
 
         public T? Card { get; set; }
+        // для Subtype
         public CardMessageGoal Goal { get; set; }
 
         public void Parse(DPTPPacket packet)

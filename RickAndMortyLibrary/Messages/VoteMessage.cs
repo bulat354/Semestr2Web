@@ -12,6 +12,7 @@ namespace RickAndMortyLibrary.Messages
         public bool IsRequest { get; set; }
 
         public bool Result { get; set; }
+        // для Subtype
         public VoteMessageGoal Goal { get; set; }
 
         public void Parse(DPTPPacket packet)

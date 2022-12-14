@@ -10,6 +10,7 @@ namespace RickAndMortyLibrary.Messages
     public class TimerMessage : IMessage
     {
         public int Seconds { get; set; }
+        // для Subtype
         public TimerMessageGoal Goal { get; set; }
 
         public void Parse(DPTPPacket packet)

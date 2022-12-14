@@ -9,6 +9,7 @@ namespace RickAndMortyLibrary.Messages
 {
     public class GameOverMessage : IMessage
     {
+        // для Subtype
         public bool IsWinner { get; set; }
 
         public void Parse(DPTPPacket packet)

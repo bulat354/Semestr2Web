@@ -13,6 +13,7 @@ namespace RickAndMortyLibrary.Messages
         public bool IsRequest { get; set; }
 
         public Character? Character { get; set; }
+        // для Subtype
         public CharacterMessageGoal Goal { get; set; }
 
         public string UserName { get; set; }

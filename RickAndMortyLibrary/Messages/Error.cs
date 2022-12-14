@@ -11,13 +11,11 @@ namespace RickAndMortyLibrary.ErrorMessages
 {
     public class Error : IMessage
     {
-        protected byte[] messageBytes;
         public string MessageString { get; }
 
         private Error(string message)
         {
             MessageString = message;
-            messageBytes = Encoding.UTF8.GetBytes(message);
         }
 
         public static Error MaxPlayers()

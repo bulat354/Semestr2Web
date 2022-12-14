@@ -10,6 +10,7 @@ namespace RickAndMortyLibrary.Messages
     public class PlayerMessage : IMessage
     {
         public string UserName { get; set; }
+        // для Subtype
         public bool DoesJoin { get; set; }
 
         public void Parse(DPTPPacket packet)
