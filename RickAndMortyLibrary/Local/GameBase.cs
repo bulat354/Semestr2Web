@@ -14,15 +14,15 @@ namespace RickAndMortyLibrary.Local
     {
         public TaskCompletionSource GameOverEvent = new TaskCompletionSource();
 
-        private IPlayer[] _players;
+        protected IPlayer[] _players;
 
-        private ICardsPack<ActionCard> actionCardsPack;
-        private ICardsPack<CharacterCard> characterCardsPack;
-        private ICardsPack<PersonalityCard> personalityCardsPack;
+        protected ICardsPack<ActionCard> actionCardsPack;
+        protected ICardsPack<CharacterCard> characterCardsPack;
+        protected ICardsPack<PersonalityCard> personalityCardsPack;
 
-        private List<ActionCard> discardPile;
+        protected List<ActionCard> discardPile;
 
-        private List<Character> characters;
+        protected List<Character> characters;
 
         public void Init(params IPlayer[] players)
         {
@@ -30,16 +30,15 @@ namespace RickAndMortyLibrary.Local
                 throw new ArgumentNullException();
 
             _players = players;
+
+            actionCardsPack = CardsImporter.GetActionCardsPack();
+            characterCardsPack = CardsImporter.GetCharacterCardsPack();
+            personalityCardsPack = CardsImporter.GetPersonalityCardsPack();
+
+            discardPile = new List<ActionCard>();
+            characters = new List<Character>();
         }
 
         public abstract void StartGame();
-
-        internal abstract void StartRound();
-        internal abstract void StartFinalRound();
-
-        internal abstract void StartTurn();
-
-        internal abstract void ReactToKill(Character character);
-        internal abstract void Invoke(ActionCard action);
     }
 }
