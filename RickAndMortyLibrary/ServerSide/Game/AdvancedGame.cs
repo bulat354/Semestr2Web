@@ -25,11 +25,11 @@ namespace RickAndMortyLibrary.ServerSide
             var playerPack = CardsImporter.GetPlayerPersonalityCardsPack();
             playerPack.Shuffle();
 
-            _players.ForEach(x => x.SetCharacter(new Character()
+            _players.ForEach(x => x.AttachCharacter(new Character()
             {
                 Card = characterCardsPack.Pop(),
                 Personality = playerPack.Pop()
-            }));
+            }, x.UserName));
         }
 
         protected override void CheckForWinners()

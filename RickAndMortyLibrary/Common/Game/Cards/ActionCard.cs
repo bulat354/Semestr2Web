@@ -9,7 +9,7 @@ namespace RickAndMortyLibrary.Common.Game.Cards
     /// <summary>
     /// Класс для карт действий. Игроки ходят ими.
     /// </summary>
-    public abstract class ActionCard : Card
+    public class ActionCard : Card
     {
         public static string BackImagePath { get; }
 

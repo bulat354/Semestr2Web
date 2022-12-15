@@ -13,7 +13,7 @@ namespace RickAndMortyLibrary.ServerSide
     /// <typeparam name="T">Тип карт</typeparam>
     internal interface ICardsPack<T> where T : Card
     {
-        int Count();
+        int Count { get; }
 
         /// <summary>
         /// Тасует карты

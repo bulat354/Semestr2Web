@@ -9,11 +9,11 @@ namespace RickAndMortyLibrary.Common.Game.Cards
     /// <summary>
     /// Класс для карт персонажей.
     /// </summary>
-    public abstract class CharacterCard : Card
+    public class CharacterCard : Card
     {
         public static string BackImagePath { get; }
 
-        public CharacterCard(string name, string imagePath, CardColor color, int count)
+        public CharacterCard(string name, string imagePath, CardColor color)
             : base(name, imagePath, color, 1)
         {
         }
