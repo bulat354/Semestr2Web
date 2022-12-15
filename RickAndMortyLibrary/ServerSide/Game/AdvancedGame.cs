@@ -28,7 +28,8 @@ namespace RickAndMortyLibrary.ServerSide
             _players.ForEach(x => x.AttachCharacter(new Character()
             {
                 Card = characterCardsPack.Pop(),
-                Personality = playerPack.Pop()
+                Personality = playerPack.Pop(),
+                IsAttachedToPlayer = true
             }, x.UserName));
         }
 

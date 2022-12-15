@@ -23,11 +23,11 @@ namespace RickAndMortyLibrary.ServerSide
         /// <summary>
         /// Удаляет карту из колоды
         /// </summary>
-        void Remove(T card);
+        void Remove(int cardId);
         /// <summary>
         /// Добавляет карту в колоду
         /// </summary>
-        void Add(T card);
+        void Add(int cardId);
 
         /// <summary>
         /// Берет верхнюю карту и удаляет из колоды
@@ -38,6 +38,6 @@ namespace RickAndMortyLibrary.ServerSide
         /// </summary>
         T Peek();
 
-        ICardsPack<T> Init(IEnumerable<T> cards);
+        ICardsPack<T> Init(IEnumerable<int> cards);
     }
 }

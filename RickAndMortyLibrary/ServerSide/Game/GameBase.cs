@@ -20,7 +20,7 @@ namespace RickAndMortyLibrary.ServerSide
         protected ICardsPack<CharacterCard> characterCardsPack;
         protected ICardsPack<PersonalityCard> personalityCardsPack;
 
-        protected List<ActionCard> discardPile;
+        protected List<int> discardPile;
 
         protected List<Character> characters;
 
@@ -35,7 +35,7 @@ namespace RickAndMortyLibrary.ServerSide
             characterCardsPack = CardsImporter.GetCharacterCardsPack();
             personalityCardsPack = CardsImporter.GetPersonalityCardsPack();
 
-            discardPile = new List<ActionCard>();
+            discardPile = new List<int>();
             characters = new List<Character>();
         }
 

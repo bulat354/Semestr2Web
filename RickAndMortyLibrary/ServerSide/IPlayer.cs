@@ -21,7 +21,7 @@ namespace RickAndMortyLibrary.ServerSide
         void SendNewPlayer(IPlayer player);
         void SendRemovePlayer(IPlayer player);
 
-        void AddCard(ActionCard actionCard);
+        void TakeCard(ActionCard actionCard);
         void AddCharacter(Character character);
 
         Task WaitForVote(CancellationToken stopWaiting);
@@ -42,6 +42,17 @@ namespace RickAndMortyLibrary.ServerSide
         Character GetCharacter();
         void AttachCharacter(Character character, string userName);
         Person GetPerson();
+        #endregion
+
+        #region Card invoking methods
+        Task<string> WaitForSelectPlayer();
+        Task<Character> WaitForSelectCharacter(Func<Character, bool> predicate);
+        Task<CardColor> WaitForSelectColor(CardColor[] colors);
+
+        void ShowTopFromPack(PersonalityCard card);
+        void ShowCharacterPerson(Character character);
+
+        void AttachNextActionCard(ActionCard card);
         #endregion
     }
 }

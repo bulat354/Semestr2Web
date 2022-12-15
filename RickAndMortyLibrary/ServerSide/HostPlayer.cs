@@ -45,7 +45,7 @@ namespace RickAndMortyLibrary.ServerSide
             ui.RemovePlayer(player.UserName);
         }
 
-        public void AddCard(ActionCard actionCard)
+        public void TakeCard(ActionCard actionCard)
         {
             ui.AddCardToHand(actionCard);
         }

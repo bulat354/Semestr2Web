@@ -13,8 +13,8 @@ namespace RickAndMortyLibrary.Common.Game.Cards
     {
         public static string BackImagePath { get; }
 
-        public CharacterCard(string name, string imagePath, CardColor color)
-            : base(name, imagePath, color, 1)
+        public CharacterCard(int id, string name, string imagePath, CardColor color)
+            : base(id, name, imagePath, color, 1)
         {
         }
     }

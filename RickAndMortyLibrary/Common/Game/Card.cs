@@ -11,6 +11,8 @@ namespace RickAndMortyLibrary.Common.Game
     /// </summary>
     public abstract class Card
     {
+        public readonly int Id;
+
         public readonly string Name;
         public readonly string ImagePath;
         public readonly CardColor Color;
@@ -18,10 +20,12 @@ namespace RickAndMortyLibrary.Common.Game
 
         public Card
             (
-            string name, string imagePath, CardColor color,
+            int id, string name, string imagePath, CardColor color,
             int inPackCount
             )
         {
+            Id = id;
+
             Name = name;
             ImagePath = imagePath;
             Color = color;

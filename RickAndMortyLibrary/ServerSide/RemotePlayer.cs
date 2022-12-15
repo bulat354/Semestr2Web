@@ -21,6 +21,7 @@ namespace RickAndMortyLibrary.ServerSide
         private LinkedList<Tuple<Func<IMessage, bool>, TaskCompletionSource<IMessage>>> waitHandles { get; set; }
 
         private Character? character;
+        private List<ActionCard> hand;
 
         public RemotePlayer(IClient client)
         {
@@ -29,6 +30,8 @@ namespace RickAndMortyLibrary.ServerSide
             Disconnected = new TaskCompletionSource();
 
             waitHandles = new LinkedList<Tuple<Func<IMessage, bool>, TaskCompletionSource<IMessage>>>();
+
+            hand = new List<ActionCard>();
         }
 
         public void Disconnect()
@@ -71,7 +74,7 @@ namespace RickAndMortyLibrary.ServerSide
             }
         }
 
-        public async Task<T> WaitFor<T>(Func<T, bool> predicate) where T : IMessage
+        private async Task<T> WaitFor<T>(Func<T, bool> predicate) where T : IMessage
         {
             var source = new TaskCompletionSource<IMessage>();
 
@@ -82,7 +85,7 @@ namespace RickAndMortyLibrary.ServerSide
             return (T)result;
         }
 
-        public async Task<T> WaitFor<T>(Func<T, bool> predicate, CancellationToken token) where T : IMessage
+        private async Task<T> WaitFor<T>(Func<T, bool> predicate, CancellationToken token) where T : IMessage
         {
             var source = new TaskCompletionSource<IMessage>();
             source.SetCanceled(token);
@@ -99,26 +102,49 @@ namespace RickAndMortyLibrary.ServerSide
             client.Send(error);
         }
 
-        public void SendNewPlayer(IPlayer player)
-        {
-            client.Send(MessageParser.JoinPlayer(player.UserName));
-        }
-
-        public void SendRemovePlayer(IPlayer player)
-        {
-            client.Send(MessageParser.DisconnectPlayer(player.UserName));
-        }
-
-        public void AddCard(ActionCard actionCard)
-        {
-            client.Send(MessageParser.AddCardToHand(actionCard));
-        }
-
+        #region Characters
         public void AddCharacter(Character character)
         {
             client.Send(MessageParser.AddToTable(character));
         }
+        #endregion
 
+        #region Timer
+        public void StartTimer(int seconds)
+        {
+            client.Send(MessageParser.StartTimer(seconds));
+        }
+
+        public void StopTimer()
+        {
+            client.Send(MessageParser.StopTimer());
+        }
+        #endregion
+
+        #region Hand Cards
+        public async Task<ActionCard?> WaitChoosingAction(CancellationToken stopWaiting)
+        {
+            client.Send(MessageParser.GetCardFromHand());
+
+            var message = await WaitFor<CardMessage<ActionCard>>(x => x.Goal == CardMessageGoal.GetFromHand, stopWaiting);
+            var card = message?.Card;
+
+            if (card != null)
+            {
+                return hand.FirstOrDefault(x => x.Id == card.Id);
+            }
+
+            return card;
+        }
+
+        public void TakeCard(ActionCard actionCard)
+        {
+            hand.Add(actionCard);
+            client.Send(MessageParser.AddCardToHand(actionCard));
+        }
+        #endregion
+
+        #region Voting
         public async Task WaitForVote(CancellationToken stopWaiting)
         {
             await WaitFor<VoteMessage>(x => x.Goal == VoteMessageGoal.Start, stopWaiting);
@@ -141,35 +167,21 @@ namespace RickAndMortyLibrary.ServerSide
         {
             client.Send(MessageParser.FromVoteScreen());
         }
+        #endregion
 
-        public void StartTimer(int seconds)
+        #region Players
+        public void SendNewPlayer(IPlayer player)
         {
-            client.Send(MessageParser.StartTimer(seconds));
+            client.Send(MessageParser.JoinPlayer(player.UserName));
         }
 
-        public void StopTimer()
+        public void SendRemovePlayer(IPlayer player)
         {
-            client.Send(MessageParser.StopTimer());
+            client.Send(MessageParser.DisconnectPlayer(player.UserName));
         }
+        #endregion
 
-        public async Task<ActionCard?> WaitChoosingAction(CancellationToken stopWaiting)
-        {
-            client.Send(MessageParser.GetCardFromHand());
-
-            var message = await WaitFor<CardMessage<ActionCard>>(x => x.Goal == CardMessageGoal.GetFromHand, stopWaiting);
-            return message?.Card;
-        }
-
-        public void Win()
-        {
-            client.Send(MessageParser.Win(true));
-        }
-
-        public void Lose()
-        {
-            client.Send(MessageParser.Win(false));
-        }
-
+        #region Advanced Game Features
         public Character? GetCharacter()
         {
             AttachCharacter(character);
@@ -193,5 +205,18 @@ namespace RickAndMortyLibrary.ServerSide
 
             return character.Personality.Person;
         }
+        #endregion
+
+        #region Game Over
+        public void Win()
+        {
+            client.Send(MessageParser.Win(true));
+        }
+
+        public void Lose()
+        {
+            client.Send(MessageParser.Win(false));
+        }
+        #endregion
     }
 }

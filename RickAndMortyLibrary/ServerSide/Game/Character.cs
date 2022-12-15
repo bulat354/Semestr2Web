@@ -14,5 +14,8 @@ namespace RickAndMortyLibrary.ServerSide
     {
         public CharacterCard Card { get; internal set; }
         public PersonalityCard Personality { get; internal set; }
+
+        public bool Immutable { get; set; } = false;
+        public bool IsAttachedToPlayer { get; set; } = false;
     }
 }
