@@ -68,9 +68,9 @@ namespace RickAndMortyLibrary.ServerSide
                 _players.ForEach(x =>
                 {
                     if (x.GetPerson() == winSide)
-                        x.Win();
-                    else
                         x.Lose();
+                    else
+                        x.Win();
                 });
             }
         }
@@ -80,10 +80,33 @@ namespace RickAndMortyLibrary.ServerSide
             return player.GetPerson() == Person.Parasite;
         }
 
-        // начинает фазу обеденного стола, возвращает сторону победивших
+        // начинает фазу обеденного стола, возвращает сторону проигравших
         protected async Task<Person> StartDiningTable()
         {
-            throw new NotImplementedException();
+            for (int i = 0; i < _players.Length; i++)
+            {
+                WaitForVoting();
+
+                var player = _players[i];
+                if (playerCharacters[i] == null)
+                    continue;
+
+                var character = await player.WaitForSelectCharacter(x => x.IsAttachedToPlayer).WaitAsync(stopGame.Token);
+                if (stopGame.IsCancellationRequested)
+                    break;
+
+                if (character.Personality.Person == Person.Parasite)
+                {
+                    continue;
+                }
+                else
+                {
+                    stopWaitingVoting.Cancel();
+                    return player.GetPerson();
+                }
+            }
+
+            return _players.Any(x => x.GetPerson() == Person.Parasite) ? Person.Parasite : Person.Friend;
         }
 
         protected override IEnumerable<Character> GetCharacters()
