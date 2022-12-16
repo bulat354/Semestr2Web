@@ -1,4 +1,5 @@
-﻿using RickAndMortyLibrary.Common.Game.Cards;
+﻿using RickAndMortyLibrary.Common.Game;
+using RickAndMortyLibrary.Common.Game.Cards;
 using System;
 using System.Collections.Generic;
 using System.Linq;

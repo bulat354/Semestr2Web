@@ -15,9 +15,10 @@ namespace RickAndMortyLibrary.Common.Game.Cards
 
         public readonly Person Person;
 
-        public PersonalityCard(int id, string name, string imagePath, int count) 
+        public PersonalityCard(int id, string name, string imagePath, int count, Person person) 
             : base(id, name, imagePath, CardColor.None, count)
         {
+            Person = person;
         }
     }
 }

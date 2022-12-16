@@ -13,9 +13,15 @@ namespace RickAndMortyLibrary.Messages
     {
         public bool IsRequest { get; set; }
 
-        public T? Card { get; set; }
+        public T? Card
+        {
+            get { return CardsImporter.GetCard<T>(cardId); }
+            set { cardId = value.Id; }
+        }
         // для Subtype
         public CardMessageGoal Goal { get; set; }
+
+        private int cardId;
 
         public void Parse(DPTPPacket packet)
         {
