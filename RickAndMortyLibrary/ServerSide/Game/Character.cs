@@ -17,5 +17,7 @@ namespace RickAndMortyLibrary.ServerSide
 
         public bool Immutable { get; set; } = false;
         public bool IsAttachedToPlayer { get; set; } = false;
+
+        public bool IsKillable { get; set; } = false;
     }
 }

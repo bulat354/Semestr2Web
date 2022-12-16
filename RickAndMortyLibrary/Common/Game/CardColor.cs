@@ -6,8 +6,12 @@ using System.Threading.Tasks;
 
 namespace RickAndMortyLibrary.Common.Game
 {
+    [Flags]
     public enum CardColor
     {
-        None, Red, Green, Blue
+        None = 0, 
+        Red = 1, 
+        Green = 2, 
+        Blue = 4
     }
 }

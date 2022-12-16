@@ -154,6 +154,8 @@ namespace RickAndMortyLibrary.ServerSide
             return character.Personality.Person == Person.Parasite;
         }
 
+        //--------------------------------------------------------
+
         protected ActionCard?[] roundCards;
         protected Stack<ActionCard> playedCards;
 
@@ -190,13 +192,6 @@ namespace RickAndMortyLibrary.ServerSide
 
                 if (stopGame.IsCancellationRequested)
                     return;
-
-                // карту в сброс
-                if (card != null)
-                {
-                    discardPile.Add(card.Id);
-                    playedCards.Push(card);
-                }
             }
 
             if (!isFinal)
@@ -290,6 +285,13 @@ namespace RickAndMortyLibrary.ServerSide
                 await InvokeSummer(action.Color, player);
             else if (action.Id < 21)
                 await InvokeBeth(action.Color, player);
+
+            // карту в сброс
+            if (card != null)
+            {
+                discardPile.Add(card.Id);
+                playedCards.Push(card);
+            }
         }
 
         #region Methods for working with cards
@@ -318,12 +320,32 @@ namespace RickAndMortyLibrary.ServerSide
             if (character == null)
                 return;
 
+            if (character.Card.Id == 11 && !character.IsKillable)
+            {
+                character.IsKillable = true;
+                return;
+            }
+            else if (character.Card.Id == 10 && playedCards.Any(x => x.Id >= 6 && x.Id <= 8))
+            {
+                return;
+            }
+            else if (character.Card.Id == 15 && playedCards.Count > 0)
+            {
+                return;
+            }
+
             characters.Remove(character);
-            _players.ForEach(x => x.RemoveCharacter(character));
+            if (character.Card.Id == 19)
+                _players.ForEach(x => x.RemoveCharacter(character, 15));
+            else
+                _players.ForEach(x => x.RemoveCharacter(character));
 
             if (character.Personality.Person == Person.Friend)
             {
-                fails++;
+                if (character.Card.Id == 1)
+                    fails = 4;
+                else
+                    fails++;
                 _players.ForEach(x => x.PlayerFailed(player));
 
                 if (toDiscard)
@@ -337,16 +359,28 @@ namespace RickAndMortyLibrary.ServerSide
                     AddCharacterToTable();
                 }
             }
+
+            await InvokeKilling(character, player);
         }
 
         protected virtual bool AnyCharacter(Func<Character, bool> predicate)
         {
-            throw new NotImplementedException();
+            return characters.Any(x => predicate(x));
         }
 
         protected virtual CardColor[] GetGameColors()
         {
-            throw new NotImplementedException();
+            var colors = new HashSet<CardColor>();
+            foreach (var character in characters)
+            {
+                if (!colors.Contains(character.Card.Color))
+                    colors.Add(character.Card.Color);
+
+                if (colors.Count == 3)
+                    break;
+            }
+
+            return colors.ToArray();
         }
 
         protected virtual async Task<Character> WaitForSelectCharacter(IPlayer player, Func<Character, bool> predicate)
@@ -357,6 +391,12 @@ namespace RickAndMortyLibrary.ServerSide
             var character = await player.WaitForSelectCharacter(predicate);
 
             return GetTheSame(character);
+        }
+
+        protected virtual async Task InvokeActionFromHand(IPlayer player)
+        {
+            var action = await player.WaitChoosingAction(stopGame.Token);
+            await Invoke(action, player);
         }
         #endregion
 
@@ -463,6 +503,34 @@ namespace RickAndMortyLibrary.ServerSide
                 player.ShowCharacterPerson(character2);
 
             await ShuffleCharacterPersons(x => x == character1 || x == character2);
+        }
+        #endregion
+
+        #region Character Cards
+        protected virtual async Task InvokeKilling(Character character, IPlayer player)
+        {
+            var id = character.Card.Id;
+
+            switch (id)
+            {
+                case 0:
+                    await InvokeBoregar(player);
+                    break;
+                case 21:
+                    await InvokeSteve(player);
+                    break;
+            }
+        }
+
+        protected virtual async Task InvokeBoregar(IPlayer player)
+        {
+            await InvokeActionFromHand(player);
+            player.TakeCard(PopCard());
+        }
+
+        protected virtual async Task InvokeSteve(IPlayer player)
+        {
+            player.TakeCard(PopCard());
         }
         #endregion
     }

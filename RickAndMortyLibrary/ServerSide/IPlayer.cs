@@ -23,7 +23,7 @@ namespace RickAndMortyLibrary.ServerSide
 
         void TakeCard(ActionCard actionCard);
         void AddCharacter(Character character);
-        void RemoveCharacter(Character character);
+        void RemoveCharacter(Character character, int timeOut = 0);
 
         Task WaitForVote(CancellationToken stopWaiting);
 
