@@ -86,6 +86,95 @@ namespace RickAndMortyLibrary.ServerSide
             throw new NotImplementedException();
         }
 
+        protected override IEnumerable<Character> GetCharacters()
+        {
+            return characters.Concat(playerCharacters);
+        }
 
+        protected override IEnumerable<Character> GetCharacters(Func<Character, bool> predicate)
+        {
+            return GetCharacters().Where(predicate);
+        }
+
+        protected override async Task KillCharacter(IPlayer player, Character? character, bool toDiscard = true, bool newCharacter = true)
+        {
+            if (character == null)
+                return;
+
+            if (character.Card.Id == 11 && !character.IsKillable)
+            {
+                character.IsKillable = true;
+                return;
+            }
+            else if (character.Card.Id == 10 && playedCards.Any(x => x.Id >= 6 && x.Id <= 8))
+            {
+                return;
+            }
+            else if (character.Card.Id == 15 && playedCards.Count > 0)
+            {
+                return;
+            }
+
+            if (!character.IsAttachedToPlayer)
+                characters.Remove(character);
+            else
+            {
+                if (character.Personality.Person == Person.Parasite)
+                {
+                    playerCharacters[player.Number] = null;
+                    player.AttachCharacter(null, player.UserName);
+                }
+                else
+                {
+                    var newChar = GetNewCharacter();
+                    playerCharacters[player.Number] = newChar;
+                    player.AttachCharacter(newChar, player.UserName);
+                }
+            }
+
+            if (character.Card.Id == 19)
+                _players.ForEach(x => x.RemoveCharacter(character, 15));
+            else
+                _players.ForEach(x => x.RemoveCharacter(character));
+
+            if (character.Personality.Person == Person.Friend)
+            {
+                if (character.Card.Id == 1)
+                    fails = 4;
+                else
+                    fails++;
+                _players.ForEach(x => x.PlayerFailed(player));
+                lastFailer = player.GetPerson();
+
+                if (toDiscard)
+                {
+                    var action = await player.WaitChoosingAction(stopGame.Token);
+                    discardPile.Add(action.Id);
+                }
+
+                if (newCharacter)
+                {
+                    AddCharacterToTable();
+                }
+            }
+
+            await InvokeKilling(character, player);
+        }
+
+        protected override async Task InvokeKilling(Character character, IPlayer player)
+        {
+            await base.InvokeKilling(character, player);
+
+            if (character.Card.Id == 20)
+                await InvokeGiraffe(player);
+        }
+
+        protected async Task InvokeGiraffe(IPlayer player)
+        {
+            var character = await WaitForSelectCharacter(player, x => x.IsAttachedToPlayer);
+
+            if (character != null)
+                player.ShowCharacterPerson(character);
+        }
     }
 }

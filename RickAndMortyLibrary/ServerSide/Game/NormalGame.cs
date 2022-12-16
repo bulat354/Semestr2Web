@@ -96,16 +96,22 @@ namespace RickAndMortyLibrary.ServerSide
             }
         }
 
-        // кладет на стол нового персонажа
-        protected void AddCharacterToTable()
+        protected Character GetNewCharacter()
         {
-            var character = new Character()
+            return new Character()
             {
                 Card = characterCardsPack.Pop(),
                 Personality = personalityCardsPack.Pop()
             };
+        }
+
+        // кладет на стол нового персонажа
+        protected void AddCharacterToTable()
+        {
+            var character = GetNewCharacter();
             // сообщает всем о добавлении персонажа
             _players.ForEach(p => p.AddCharacter(character));
+            characters.Add(character);
         }
 
         // перемешивает игроков
@@ -119,6 +125,9 @@ namespace RickAndMortyLibrary.ServerSide
                 var player = _players[i];
                 _players[i] = _players[num];
                 _players[num] = player;
+
+                player.Number = num;
+                _players[i].Number = i;
             }
         }
 
@@ -235,13 +244,23 @@ namespace RickAndMortyLibrary.ServerSide
             }
         }
 
+        protected virtual IEnumerable<Character> GetCharacters(Func<Character, bool> predicate)
+        {
+            return characters.Where(predicate);
+        }
+
+        protected virtual IEnumerable<Character> GetCharacters()
+        {
+            return characters;
+        }
+
         protected virtual Character? GetTheSame(Character? character)
         {
             if (character == null)
                 return null;
             var id = character.Card.Id;
 
-            return characters.FirstOrDefault(x => x.Card.Id == id);
+            return GetCharacters().FirstOrDefault(x => x.Card.Id == id);
         }
 
         // выполняет действие из карты действия
@@ -297,8 +316,7 @@ namespace RickAndMortyLibrary.ServerSide
         #region Methods for working with cards
         protected virtual async Task ShuffleCharacterPersons(Func<Character, bool> predicate)
         {
-            var toShuffle = characters
-                .Where(x => predicate(x) && !x.Immutable)
+            var toShuffle = GetCharacters(x => predicate(x) && !x.Immutable)
                 .ToArray();
 
             var random = new Random();
@@ -365,13 +383,13 @@ namespace RickAndMortyLibrary.ServerSide
 
         protected virtual bool AnyCharacter(Func<Character, bool> predicate)
         {
-            return characters.Any(x => predicate(x));
+            return GetCharacters(predicate).Any();
         }
 
         protected virtual CardColor[] GetGameColors()
         {
             var colors = new HashSet<CardColor>();
-            foreach (var character in characters)
+            foreach (var character in GetCharacters())
             {
                 if (!colors.Contains(character.Card.Color))
                     colors.Add(character.Card.Color);

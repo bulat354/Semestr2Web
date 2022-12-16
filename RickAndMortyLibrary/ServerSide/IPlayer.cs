@@ -15,6 +15,7 @@ namespace RickAndMortyLibrary.ServerSide
     internal interface IPlayer
     {
         string UserName { get; set; }
+        int Number { get; set; }
 
         void SendError(Error error);
 
