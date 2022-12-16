@@ -153,7 +153,7 @@ namespace RickAndMortyLibrary.ServerSide
 
             client.Send(MessageParser.GetCardFromHand());
 
-            var message = await WaitFor<CardMessage<ActionCard>>(x => x.Goal == CardMessageGoal.GetFromHand, stopWaiting);
+            var message = await WaitFor<CardMessage>(x => x.Goal == CardMessageGoal.GetFromHand, stopWaiting);
             var card = message?.Card;
 
             if (card != null)
@@ -161,7 +161,7 @@ namespace RickAndMortyLibrary.ServerSide
                 return hand.FirstOrDefault(x => x.Id == card.Id);
             }
 
-            return card;
+            return (ActionCard)card;
         }
 
         public void TakeCard(ActionCard actionCard)
@@ -268,7 +268,7 @@ namespace RickAndMortyLibrary.ServerSide
             client.Send(MessageParser.WaitSelectColor(colors));
 
             var result = await WaitFor<ColorsMessage>(x => x.Goal == ColorsMessageGoal.Select);
-            return result.Color;
+            return result.Color.Value;
         }
 
         public void ShowTopFromPack(PersonalityCard card)

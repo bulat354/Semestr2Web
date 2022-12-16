@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace RickAndMortyLibrary.Messages
 {
+    [PacketType(3)]
     public class Error : IMessage
     {
         public string MessageString { get; }
@@ -32,12 +33,27 @@ namespace RickAndMortyLibrary.Messages
             return new Error("Выбери другого персонажа");
         }
 
-        public DPTPPacket ToPacket()
+        public byte GetPacketType()
         {
             throw new NotImplementedException();
         }
 
-        public void Parse(DPTPPacket packet)
+        public byte GetPacketSubtype()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetPacketSubtype(byte subtype)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<DPTPPacketField?> GetPacketFields()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetPacketFields(DPTPPacket packet)
         {
             throw new NotImplementedException();
         }

@@ -87,7 +87,7 @@ namespace RickAndMortyLibrary.ServerSide
                     // добавляем игрока
                     AddPlayer(player);
                     // ожидаем отсоединения игрока
-                    PlayerDisconnect(player).Start();
+                    PlayerDisconnect(player);
                 }
             }
         }

@@ -306,10 +306,10 @@ namespace RickAndMortyLibrary.ServerSide
                 await InvokeBeth(action.Color, player);
 
             // карту в сброс
-            if (card != null)
+            if (action != null)
             {
-                discardPile.Add(card.Id);
-                playedCards.Push(card);
+                discardPile.Add(action.Id);
+                playedCards.Push(action);
             }
         }
 

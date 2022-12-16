@@ -9,7 +9,12 @@ namespace RickAndMortyLibrary.Messages
 {
     public interface IMessage
     {
-        DPTPPacket ToPacket();
-        void Parse(DPTPPacket packet);
+        byte GetPacketType();
+
+        byte GetPacketSubtype();
+        void SetPacketSubtype(byte subtype);
+
+        IEnumerable<DPTPPacketField?> GetPacketFields();
+        void SetPacketFields(DPTPPacket packet);
     }
 }

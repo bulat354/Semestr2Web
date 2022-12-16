@@ -7,17 +7,33 @@ using System.Threading.Tasks;
 
 namespace RickAndMortyLibrary.Messages
 {
+    [PacketType(4)]
     public class GameOverMessage : IMessage
     {
-        // для Subtype
+        //subtype
         public bool IsWinner { get; set; }
 
-        public void Parse(DPTPPacket packet)
+        public IEnumerable<DPTPPacketField?> GetPacketFields()
         {
             throw new NotImplementedException();
         }
 
-        public DPTPPacket ToPacket()
+        public byte GetPacketSubtype()
+        {
+            throw new NotImplementedException();
+        }
+
+        public byte GetPacketType()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetPacketFields(DPTPPacket packet)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetPacketSubtype(byte subtype)
         {
             throw new NotImplementedException();
         }

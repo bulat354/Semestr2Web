@@ -56,12 +56,8 @@ namespace RickAndMortyLibrary.ClientSide
 
         private async Task<IMessage?> ProcessMessage(IMessage message)
         {
-            if (message is CardMessage<ActionCard> obj1)
+            if (message is CardMessage obj1)
                 return await Process(obj1);
-            else if (message is CardMessage<CharacterCard> obj2)
-                return await Process(obj2);
-            else if (message is CardMessage<PersonalityCard> obj3)
-                return await Process(obj3);
             else if (message is CharacterMessage obj4)
                 return await Process(obj4);
             else if (message is ColorsMessage obj5)
@@ -80,31 +76,17 @@ namespace RickAndMortyLibrary.ClientSide
                 return null;
         }
 
-        private async Task<IMessage?> Process(CardMessage<ActionCard> message)
+        private async Task<IMessage?> Process(CardMessage message)
         {
             switch (message.Goal)
             {
                 case CardMessageGoal.AddToHand:
-                    ui.AddCardToHand(message.Card);
+                    ui.AddCardToHand((ActionCard)message.Card);
                     break;
                 case CardMessageGoal.RequestChoosing:
                     return MessageParser.SendCardFromHand(await ui.ChooseActionFromHand());
-            }
-
-            return null;
-        }
-
-        private async Task<IMessage?> Process(CardMessage<CharacterCard> message)
-        {
-            throw new NotImplementedException();
-        }
-
-        private async Task<IMessage?> Process(CardMessage<PersonalityCard> message)
-        {
-            switch (message.Goal)
-            {
                 case CardMessageGoal.ShowPack:
-                    ui.ShowTopFromPack(message.Card);
+                    ui.ShowTopFromPack((PersonalityCard)message.Card);
                     break;
             }
 
@@ -119,7 +101,7 @@ namespace RickAndMortyLibrary.ClientSide
                     ui.AddCharacter(message.Character);
                     break;
                 case CharacterMessageGoal.RemoveFromTable:
-                    ui.RemoveCharacter(message.Character, message.TimeOut);
+                    ui.RemoveCharacter(message.Character, message.TimeOut.Value);
                     break;
                 case CharacterMessageGoal.AddToPlayer:
                     ui.SetCharacter(message.Character, message.UserName);
@@ -187,7 +169,7 @@ namespace RickAndMortyLibrary.ClientSide
             switch (message.Goal)
             {
                 case TimerMessageGoal.Start:
-                    ui.StartTimer(message.Seconds);
+                    ui.StartTimer(message.Seconds.Value);
                     break;
                 case TimerMessageGoal.Stop:
                     ui.StopTimer();

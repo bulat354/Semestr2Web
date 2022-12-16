@@ -40,7 +40,7 @@ namespace RickAndMortyLibrary.Common
 
         public async void Send(IMessage message)
         {
-            var packet = message.ToPacket();
+            var packet = MessageParser.ToPacket(message);
             await client.SendPacket(packet);
         }
     }

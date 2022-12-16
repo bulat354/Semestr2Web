@@ -5,6 +5,7 @@ using RickAndMortyLibrary.ServerSide;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,9 +13,39 @@ namespace RickAndMortyLibrary.Messages
 {
     public class MessageParser
     {
+        public static Dictionary<byte, Type> dict;
+
+        static MessageParser()
+        {
+            dict = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(x => Attribute.IsDefined(x, typeof(PacketTypeAttribute)) && x.IsSubclassOf(typeof(IMessage)))
+                .ToDictionary(x => x.GetCustomAttribute<PacketTypeAttribute>().PacketType);
+        }
+
         public static IMessage Parse(DPTPPacket packet)
         {
-            throw new NotImplementedException();
+            var message = (IMessage)Activator.CreateInstance(dict[packet.PacketType]);
+
+            message.SetPacketFields(packet);
+            message.SetPacketSubtype(packet.PacketSubtype);
+
+            return message;
+        }
+
+        public static DPTPPacket ToPacket(IMessage message)
+        {
+            var type = message.GetPacketType();
+            var subtype = message.GetPacketSubtype();
+
+            var packet = DPTPPacket.Create(type, subtype);
+
+            foreach (var field in message.GetPacketFields())
+            {
+                if (field != null)
+                    packet.Fields.Add(field);
+            }
+            
+            return packet;
         }
 
         #region Player Message
@@ -54,29 +85,28 @@ namespace RickAndMortyLibrary.Messages
         #endregion
 
         #region Card Message
-        public static CardMessage<ActionCard> AddCardToHand(ActionCard actionCard)
-            => new CardMessage<ActionCard>()
+        public static CardMessage AddCardToHand(ActionCard actionCard)
+            => new CardMessage()
             {
                 Card = actionCard,
                 Goal = CardMessageGoal.AddToHand,
             };
 
-        public static CardMessage<ActionCard> GetCardFromHand()
-            => new CardMessage<ActionCard>()
+        public static CardMessage GetCardFromHand()
+            => new CardMessage()
             {
-                IsRequest = true,
                 Goal = CardMessageGoal.RequestChoosing
             };
 
-        public static CardMessage<ActionCard> SendCardFromHand(ActionCard card)
-            => new CardMessage<ActionCard>()
+        public static CardMessage SendCardFromHand(ActionCard card)
+            => new CardMessage()
             {
                 Card = card,
                 Goal = CardMessageGoal.GetFromHand
             };
 
-        public static CardMessage<PersonalityCard> ShowPackTop(PersonalityCard card)
-            => new CardMessage<PersonalityCard>()
+        public static CardMessage ShowPackTop(PersonalityCard card)
+            => new CardMessage()
             {
                 Card = card,
                 Goal = CardMessageGoal.ShowPack,
@@ -116,7 +146,6 @@ namespace RickAndMortyLibrary.Messages
         public static CharacterMessage WaitForSelectCharacter()
             => new CharacterMessage()
             {
-                IsRequest = true,
                 Goal = CharacterMessageGoal.WaitSelect
             };
 
@@ -150,8 +179,7 @@ namespace RickAndMortyLibrary.Messages
         public static VoteMessage RequestVoteResult()
             => new VoteMessage()
             {
-                Goal = VoteMessageGoal.WaitForResult,
-                IsRequest = true
+                Goal = VoteMessageGoal.WaitForResult
             };
 
         public static VoteMessage SendVoteResult(bool result)

@@ -8,27 +8,35 @@ using System.Threading.Tasks;
 
 namespace RickAndMortyLibrary.Messages
 {
-    public class CardMessage<T> : IMessage
-        where T : Card
+    [PacketType(1)]
+    public class CardMessage : IMessage
     {
-        public bool IsRequest { get; set; }
-
-        public T? Card
-        {
-            get { return CardsImporter.GetCard<T>(cardId); }
-            set { cardId = value.Id; }
-        }
-        // для Subtype
+        //subtype
         public CardMessageGoal Goal { get; set; }
 
-        private int cardId;
+        public Card? Card { get; set; }
 
-        public void Parse(DPTPPacket packet)
+        public IEnumerable<DPTPPacketField?> GetPacketFields()
         {
             throw new NotImplementedException();
         }
 
-        public DPTPPacket ToPacket()
+        public byte GetPacketSubtype()
+        {
+            throw new NotImplementedException();
+        }
+
+        public byte GetPacketType()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetPacketFields(DPTPPacket packet)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetPacketSubtype(byte subtype)
         {
             throw new NotImplementedException();
         }
