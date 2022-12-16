@@ -23,6 +23,7 @@ namespace RickAndMortyLibrary.ServerSide
 
         void TakeCard(ActionCard actionCard);
         void AddCharacter(Character character);
+        void RemoveCharacter(Character character);
 
         Task WaitForVote(CancellationToken stopWaiting);
 
@@ -37,6 +38,8 @@ namespace RickAndMortyLibrary.ServerSide
 
         void Win();
         void Lose();
+
+        void PlayerFailed(IPlayer player);
 
         #region Advanced game features
         Character GetCharacter();
