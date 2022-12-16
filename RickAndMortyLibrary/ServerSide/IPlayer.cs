@@ -1,6 +1,6 @@
 ﻿using RickAndMortyLibrary.Common.Game;
 using RickAndMortyLibrary.Common.Game.Cards;
-using RickAndMortyLibrary.ErrorMessages;
+using RickAndMortyLibrary.Messages;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,6 +1,5 @@
 ﻿using DPTPLibrary;
 using RickAndMortyLibrary.Common;
-using RickAndMortyLibrary.ErrorMessages;
 using RickAndMortyLibrary.Messages;
 using RickAndMortyLibrary.ServerSide.Game;
 using System;

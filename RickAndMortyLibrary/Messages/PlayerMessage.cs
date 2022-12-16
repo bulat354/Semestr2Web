@@ -11,7 +11,7 @@ namespace RickAndMortyLibrary.Messages
     {
         public string UserName { get; set; }
         // для Subtype
-        public bool DoesJoin { get; set; }
+        public PlayerMessageGoal Goal { get; set; }
 
         public void Parse(DPTPPacket packet)
         {
@@ -22,5 +22,10 @@ namespace RickAndMortyLibrary.Messages
         {
             throw new NotImplementedException();
         }
+    }
+
+    public enum PlayerMessageGoal
+    {
+        Join, Disconnect, Fail, Select, WaitSelect
     }
 }

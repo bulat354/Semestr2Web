@@ -1,4 +1,5 @@
 ﻿using MyProtocol;
+using RickAndMortyLibrary.Common.Game;
 using RickAndMortyLibrary.Common.Game.Cards;
 using RickAndMortyLibrary.ServerSide;
 using System;
@@ -20,15 +21,35 @@ namespace RickAndMortyLibrary.Messages
         public static PlayerMessage JoinPlayer(string name)
             => new PlayerMessage()
             {
-                DoesJoin = true,
+                Goal = PlayerMessageGoal.Join,
                 UserName = name
             };
 
         public static PlayerMessage DisconnectPlayer(string name)
             => new PlayerMessage()
             {
-                DoesJoin = false,
+                Goal = PlayerMessageGoal.Disconnect,
                 UserName = name
+            };
+
+        public static PlayerMessage FailPlayer(string name)
+            => new PlayerMessage()
+            {
+                Goal = PlayerMessageGoal.Fail,
+                UserName = name
+            };
+
+        public static PlayerMessage SelectPlayer(string name)
+            => new PlayerMessage()
+            {
+                Goal = PlayerMessageGoal.Select,
+                UserName = name
+            };
+
+        public static PlayerMessage WaitForSelectPlayer()
+            => new PlayerMessage()
+            {
+                Goal = PlayerMessageGoal.WaitSelect
             };
         #endregion
 
@@ -46,9 +67,23 @@ namespace RickAndMortyLibrary.Messages
                 IsRequest = true,
                 Goal = CardMessageGoal.RequestChoosing
             };
+
+        public static CardMessage<ActionCard> SendCardFromHand(ActionCard card)
+            => new CardMessage<ActionCard>()
+            {
+                Card = card,
+                Goal = CardMessageGoal.GetFromHand
+            };
+
+        public static CardMessage<PersonalityCard> ShowPackTop(PersonalityCard card)
+            => new CardMessage<PersonalityCard>()
+            {
+                Card = card,
+                Goal = CardMessageGoal.ShowPack,
+            };
         #endregion
 
-        #region
+        #region Character Message
         public static CharacterMessage AddToTable(Character character)
             => new CharacterMessage()
             {
@@ -56,10 +91,11 @@ namespace RickAndMortyLibrary.Messages
                 Goal = CharacterMessageGoal.AddToTable,
             };
 
-        public static CharacterMessage RemoveFromTable(Character character)
+        public static CharacterMessage RemoveFromTable(Character character, int timeOut = 0)
             => new CharacterMessage()
             {
-                Goal = CharacterMessageGoal.RemoveFromTable
+                Goal = CharacterMessageGoal.RemoveFromTable,
+                TimeOut = timeOut
             };
 
         public static CharacterMessage AttachToPlayer(Character? character, string userName)
@@ -68,6 +104,27 @@ namespace RickAndMortyLibrary.Messages
                 Character = character,
                 UserName = userName,
                 Goal = CharacterMessageGoal.AddToPlayer
+            };
+
+        public static CharacterMessage SelectCharacter(Character? character)
+            => new CharacterMessage()
+            {
+                Character = character,
+                Goal = CharacterMessageGoal.Select
+            };
+
+        public static CharacterMessage WaitForSelectCharacter()
+            => new CharacterMessage()
+            {
+                IsRequest = true,
+                Goal = CharacterMessageGoal.WaitSelect
+            };
+
+        public static CharacterMessage RevealCharacter(Character character)
+            => new CharacterMessage()
+            {
+                Character = character,
+                Goal = CharacterMessageGoal.Reveal
             };
         #endregion
 
@@ -125,6 +182,22 @@ namespace RickAndMortyLibrary.Messages
             => new GameOverMessage()
             {
                 IsWinner = isTrue
+            };
+        #endregion
+
+        #region Colors Message
+        public static ColorsMessage WaitSelectColor(CardColor[] colors)
+            => new ColorsMessage()
+            {
+                Colors = colors,
+                Goal = ColorsMessageGoal.WaitSelect
+            };
+
+        public static ColorsMessage SelectColor(CardColor color)
+            => new ColorsMessage()
+            {
+                Color = color,
+                Goal = ColorsMessageGoal.Select
             };
         #endregion
 

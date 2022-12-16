@@ -13,6 +13,7 @@ namespace RickAndMortyLibrary.Messages
         public bool IsRequest { get; set; }
 
         public Character? Character { get; set; }
+        public int TimeOut { get; set; }
         // для Subtype
         public CharacterMessageGoal Goal { get; set; }
 
@@ -31,6 +32,6 @@ namespace RickAndMortyLibrary.Messages
 
     public enum CharacterMessageGoal
     {
-        AddToTable, RemoveFromTable, AddToPlayer, GetFromPlayer
+        AddToTable, RemoveFromTable, AddToPlayer, GetFromPlayer, WaitSelect, Select, Reveal
     }
 }

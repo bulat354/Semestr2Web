@@ -41,5 +41,15 @@ namespace RickAndMortyLibrary.Common
 
         Task<Character> GetCharacter();
         void SetCharacter(Character character, string userName);
+
+        void RemoveCharacter(Character character, int timeout);
+        void PlayerFailed(string playerName);
+
+        Task<string> SelectPlayer();
+        Task<Character> SelectCharacter();
+        Task<CardColor> SelectColor(CardColor[] colors);
+
+        void ShowTopFromPack(PersonalityCard card);
+        void ShowCharacterPerson(Character character);
     }
 }

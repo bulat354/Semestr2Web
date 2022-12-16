@@ -1,13 +1,12 @@
 ﻿using MyProtocol;
 using MyProtocol.Attributes;
-using RickAndMortyLibrary.Messages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RickAndMortyLibrary.ErrorMessages
+namespace RickAndMortyLibrary.Messages
 {
     public class Error : IMessage
     {
@@ -26,6 +25,11 @@ namespace RickAndMortyLibrary.ErrorMessages
         public static Error MinPlayers()
         {
             return new Error("Недостаточное число игроков");
+        }
+
+        public static Error WrongCharacter()
+        {
+            return new Error("Выбери другого персонажа");
         }
 
         public DPTPPacket ToPacket()

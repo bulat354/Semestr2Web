@@ -1,7 +1,7 @@
 ﻿using RickAndMortyLibrary.Common;
 using RickAndMortyLibrary.Common.Game;
 using RickAndMortyLibrary.Common.Game.Cards;
-using RickAndMortyLibrary.ErrorMessages;
+using RickAndMortyLibrary.Messages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +16,7 @@ namespace RickAndMortyLibrary.ServerSide
     internal class HostPlayer : IPlayer
     {
         public string UserName { get; set; }
+        public int Number { get; set; }
 
         private IPlayerUI ui;
 
@@ -30,6 +31,61 @@ namespace RickAndMortyLibrary.ServerSide
             await ui.WaitForPressStart();
         }
 
+        #region Card
+        public void TakeCard(ActionCard actionCard)
+        {
+            ui.AddCardToHand(actionCard);
+        }
+
+        private ActionCard? next = null;
+
+        public async Task<ActionCard?> WaitChoosingAction(CancellationToken stopWaiting)
+        {
+            if (next == null)
+                return await ui.ChooseActionFromHand();
+
+            var tmp = next;
+            next = null;
+            return tmp;
+        }
+
+        public void ShowTopFromPack(PersonalityCard card)
+        {
+            ui.ShowTopFromPack(card);
+        }
+        #endregion
+
+        #region Character
+        public void AddCharacter(Character character)
+        {
+            ui.AddCharacter(character);
+        }
+
+        public void RemoveCharacter(Character character, int timeOut = 0)
+        {
+            ui.RemoveCharacter(character, timeOut);
+        }
+
+        public void AttachCharacter(Character? character, string userName)
+        {
+            this.character = character;
+            ui.SetCharacter(character, userName);
+        }
+
+        private Character? character;
+
+        public Character? GetCharacter()
+        {
+            AttachCharacter(character, UserName);
+            return character;
+        }
+
+        public Person GetPerson()
+        {
+            return character?.Personality?.Person ?? Person.Friend;
+        }
+        #endregion
+
         public void SendError(Error error)
         {
             ui.ShowError(error.MessageString);
@@ -43,16 +99,6 @@ namespace RickAndMortyLibrary.ServerSide
         public void SendRemovePlayer(IPlayer player)
         {
             ui.RemovePlayer(player.UserName);
-        }
-
-        public void TakeCard(ActionCard actionCard)
-        {
-            ui.AddCardToHand(actionCard);
-        }
-
-        public void AddCharacter(Character character)
-        {
-            ui.AddCharacter(character);
         }
 
         public async Task WaitForVote(CancellationToken stopWaiting)
@@ -85,11 +131,6 @@ namespace RickAndMortyLibrary.ServerSide
             ui.StopTimer();
         }
 
-        public async Task<ActionCard?> WaitChoosingAction(CancellationToken stopWaiting)
-        {
-            return await ui.ChooseActionFromHand();
-        }
-
         public void Win()
         {
             ui.Win();
@@ -100,21 +141,42 @@ namespace RickAndMortyLibrary.ServerSide
             ui.Lose();
         }
 
-        public Character GetCharacter()
+        public void PlayerFailed(IPlayer player)
         {
-            var task = ui.GetCharacter();
-            task.Wait();
-            return task.Result;
+            ui.PlayerFailed(player.UserName);
         }
 
-        public void AttachCharacter(Character character, string userName)
+        public async Task<string> WaitForSelectPlayer()
         {
-            ui.SetCharacter(character, userName);
+            return await ui.SelectPlayer();
         }
 
-        public Person GetPerson()
+        public async Task<Character> WaitForSelectCharacter(Func<Character, bool> predicate)
         {
-            return GetCharacter().Personality.Person;
+            while (true)
+            {
+                var character = await ui.SelectCharacter();
+
+                if (predicate(character))
+                    return character;
+                else
+                    ui.ShowError(Error.WrongCharacter().MessageString);
+            }
+        }
+
+        public async Task<CardColor> WaitForSelectColor(CardColor[] colors)
+        {
+            return await ui.SelectColor(colors);
+        }
+
+        public void ShowCharacterPerson(Character character)
+        {
+            ui.ShowCharacterPerson(character);
+        }
+
+        public void AttachNextActionCard(ActionCard card)
+        {
+            next = card;
         }
     }
 }

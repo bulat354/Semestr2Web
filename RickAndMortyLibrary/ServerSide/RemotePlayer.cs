@@ -1,7 +1,6 @@
 ﻿using RickAndMortyLibrary.Common;
 using RickAndMortyLibrary.Common.Game;
 using RickAndMortyLibrary.Common.Game.Cards;
-using RickAndMortyLibrary.ErrorMessages;
 using RickAndMortyLibrary.Messages;
 using System;
 using System.Collections.Generic;
@@ -19,6 +18,7 @@ namespace RickAndMortyLibrary.ServerSide
         private IClient client;
 
         private LinkedList<Tuple<Func<IMessage, bool>, TaskCompletionSource<IMessage>>> waitHandles { get; set; }
+        public int Number { get; set; }
 
         private Character? character;
         private List<ActionCard> hand;
@@ -107,6 +107,24 @@ namespace RickAndMortyLibrary.ServerSide
         {
             client.Send(MessageParser.AddToTable(character));
         }
+
+        public void RemoveCharacter(Character character, int timeOut = 0)
+        {
+            client.Send(MessageParser.RemoveFromTable(character, timeOut));
+        }
+
+        public async Task<Character> WaitForSelectCharacter(Func<Character, bool> predicate)
+        {
+            client.Send(MessageParser.WaitForSelectCharacter());
+
+            var result = await WaitFor<CharacterMessage>(x => x.Goal == CharacterMessageGoal.Select);
+            return result.Character;
+        }
+
+        public void ShowCharacterPerson(Character character)
+        {
+            client.Send(MessageParser.RevealCharacter(character));
+        }
         #endregion
 
         #region Timer
@@ -122,8 +140,17 @@ namespace RickAndMortyLibrary.ServerSide
         #endregion
 
         #region Hand Cards
+        private ActionCard? next = null;
+
         public async Task<ActionCard?> WaitChoosingAction(CancellationToken stopWaiting)
         {
+            if (next != null)
+            {
+                var tmp = next;
+                next = null;
+                return tmp;
+            }
+
             client.Send(MessageParser.GetCardFromHand());
 
             var message = await WaitFor<CardMessage<ActionCard>>(x => x.Goal == CardMessageGoal.GetFromHand, stopWaiting);
@@ -141,6 +168,11 @@ namespace RickAndMortyLibrary.ServerSide
         {
             hand.Add(actionCard);
             client.Send(MessageParser.AddCardToHand(actionCard));
+        }
+
+        public void AttachNextActionCard(ActionCard card)
+        {
+            next = card;
         }
         #endregion
 
@@ -179,6 +211,19 @@ namespace RickAndMortyLibrary.ServerSide
         {
             client.Send(MessageParser.DisconnectPlayer(player.UserName));
         }
+
+        public async Task<string> WaitForSelectPlayer()
+        {
+            client.Send(MessageParser.WaitForSelectPlayer());
+
+            var result = await WaitFor<PlayerMessage>(x => x.Goal == PlayerMessageGoal.Select);
+            return result.UserName;
+        }
+
+        public void PlayerFailed(IPlayer player)
+        {
+            client.Send(MessageParser.FailPlayer(player.UserName));
+        }
         #endregion
 
         #region Advanced Game Features
@@ -207,7 +252,7 @@ namespace RickAndMortyLibrary.ServerSide
         }
         #endregion
 
-        #region Game Over
+        #region Other
         public void Win()
         {
             client.Send(MessageParser.Win(true));
@@ -216,6 +261,19 @@ namespace RickAndMortyLibrary.ServerSide
         public void Lose()
         {
             client.Send(MessageParser.Win(false));
+        }
+
+        public async Task<CardColor> WaitForSelectColor(CardColor[] colors)
+        {
+            client.Send(MessageParser.WaitSelectColor(colors));
+
+            var result = await WaitFor<ColorsMessage>(x => x.Goal == ColorsMessageGoal.Select);
+            return result.Color;
+        }
+
+        public void ShowTopFromPack(PersonalityCard card)
+        {
+            client.Send(MessageParser.ShowPackTop(card));
         }
         #endregion
     }

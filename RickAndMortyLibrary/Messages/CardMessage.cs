@@ -36,6 +36,6 @@ namespace RickAndMortyLibrary.Messages
 
     public enum CardMessageGoal
     {
-        AddToHand, RequestChoosing, GetFromHand
+        AddToHand, RequestChoosing, GetFromHand, ShowPack
     }
 }
