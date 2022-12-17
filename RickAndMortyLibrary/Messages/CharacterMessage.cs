@@ -62,8 +62,8 @@ namespace RickAndMortyLibrary.Messages
                 Character.Immutable = DPTPFieldConverter.ToBool(packet, 4).Value;
             }
 
-            TimeOut = DPTPFieldConverter.ToInt(packet, 0);
-            UserName = DPTPFieldConverter.ToString(packet, 0);
+            TimeOut = DPTPFieldConverter.ToInt(packet, 5);
+            UserName = DPTPFieldConverter.ToString(packet, 6);
         }
     }
 

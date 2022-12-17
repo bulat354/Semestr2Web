@@ -18,27 +18,38 @@ namespace RickAndMortyLibrary.Messages
 
         public IEnumerable<DPTPPacketField?> GetPacketFields()
         {
-            throw new NotImplementedException();
+            if (Card != null)
+                yield return DPTPFieldConverter.ToField(0, Card.Id);
         }
 
         public byte GetPacketSubtype()
         {
-            throw new NotImplementedException();
+            return (byte)Goal;
         }
 
         public byte GetPacketType()
         {
-            throw new NotImplementedException();
+            return 1;
         }
 
         public void SetPacketFields(DPTPPacket packet)
         {
-            throw new NotImplementedException();
+            switch (Goal)
+            {
+                case CardMessageGoal.AddToHand:
+                case CardMessageGoal.GetFromHand:
+                    Card = DPTPFieldConverter.ToActionCard(packet, 0);
+                    break;
+
+                case CardMessageGoal.ShowPack:
+                    Card = DPTPFieldConverter.ToPersonalityCard(packet, 0);
+                    break;
+            }
         }
 
         public void SetPacketSubtype(byte subtype)
         {
-            throw new NotImplementedException();
+            Goal = (CardMessageGoal)subtype;
         }
     }
 

@@ -13,31 +13,31 @@ namespace RickAndMortyLibrary.Messages
         //subtype
         public VoteMessageGoal Goal { get; set; }
 
-        public bool Result { get; set; }
+        public bool? Result { get; set; }
 
         public IEnumerable<DPTPPacketField?> GetPacketFields()
         {
-            throw new NotImplementedException();
+            yield return DPTPFieldConverter.ToField(0, Result);
         }
 
         public byte GetPacketSubtype()
         {
-            throw new NotImplementedException();
+            return (byte)Goal;
         }
 
         public byte GetPacketType()
         {
-            throw new NotImplementedException();
+            return 7;
         }
 
         public void SetPacketFields(DPTPPacket packet)
         {
-            throw new NotImplementedException();
+            Result = DPTPFieldConverter.ToBool(packet, 0);
         }
 
         public void SetPacketSubtype(byte subtype)
         {
-            throw new NotImplementedException();
+            Goal = (VoteMessageGoal)subtype;
         }
     }
 

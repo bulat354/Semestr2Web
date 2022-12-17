@@ -19,27 +19,34 @@ namespace RickAndMortyLibrary.Messages
 
         public IEnumerable<DPTPPacketField?> GetPacketFields()
         {
-            throw new NotImplementedException();
+            if (Color != null)
+                yield return DPTPFieldConverter.ToField(0, (byte)Color);
+            
+            if (Colors != null)
+                yield return DPTPFieldConverter.ToField(0, Colors.Select(c => (byte)c).ToArray());
         }
 
         public byte GetPacketSubtype()
         {
-            throw new NotImplementedException();
+            return (byte)Goal;
         }
 
         public byte GetPacketType()
         {
-            throw new NotImplementedException();
+            return 2;
         }
 
         public void SetPacketFields(DPTPPacket packet)
         {
-            throw new NotImplementedException();
+            var color = DPTPFieldConverter.ToInt(packet, 0);
+            Color = (color != null) ? (CardColor)color : null;
+
+            Colors = DPTPFieldConverter.ToBytes(packet, 1)?.Select(p => (CardColor)p).ToArray();
         }
 
         public void SetPacketSubtype(byte subtype)
         {
-            throw new NotImplementedException();
+            Goal = (ColorsMessageGoal)subtype;
         }
     }
 

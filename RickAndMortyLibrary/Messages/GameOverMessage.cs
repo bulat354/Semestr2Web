@@ -15,27 +15,24 @@ namespace RickAndMortyLibrary.Messages
 
         public IEnumerable<DPTPPacketField?> GetPacketFields()
         {
-            throw new NotImplementedException();
+            yield break;
         }
 
         public byte GetPacketSubtype()
         {
-            throw new NotImplementedException();
+            return Convert.ToByte(IsWinner);
         }
 
         public byte GetPacketType()
         {
-            throw new NotImplementedException();
+            return 4;
         }
 
-        public void SetPacketFields(DPTPPacket packet)
-        {
-            throw new NotImplementedException();
-        }
+        public void SetPacketFields(DPTPPacket packet) { }
 
         public void SetPacketSubtype(byte subtype)
         {
-            throw new NotImplementedException();
+            IsWinner = Convert.ToBoolean(subtype);
         }
     }
 }

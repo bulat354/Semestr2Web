@@ -17,27 +17,27 @@ namespace RickAndMortyLibrary.Messages
 
         public IEnumerable<DPTPPacketField?> GetPacketFields()
         {
-            throw new NotImplementedException();
+            yield return DPTPFieldConverter.ToField(0, UserName);
         }
 
         public byte GetPacketSubtype()
         {
-            throw new NotImplementedException();
+            return (byte)Goal;
         }
 
         public byte GetPacketType()
         {
-            throw new NotImplementedException();
+            return 5;
         }
 
         public void SetPacketFields(DPTPPacket packet)
         {
-            throw new NotImplementedException();
+            UserName = DPTPFieldConverter.ToString(packet, 0);
         }
 
         public void SetPacketSubtype(byte subtype)
         {
-            throw new NotImplementedException();
+            Goal = (PlayerMessageGoal)subtype;
         }
     }
 
