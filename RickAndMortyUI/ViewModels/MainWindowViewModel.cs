@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using ReactiveUI;
 using RickAndMortyLibrary.Common;
 
@@ -8,12 +11,6 @@ namespace RickAndMortyUI.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        private string _backImage = "C:/git/background.png";
-        public string BackgroundImagePath
-        {
-            get { return _backImage; }
-            set { _backImage = value; this.RaisePropertyChanged(nameof(BackgroundImagePath)); }
-        }
 
         public void ButtonCreateClick()
         {
