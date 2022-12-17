@@ -19,63 +19,64 @@ namespace RickAndMortyLibrary.Common.Game
 
         static CardsImporter()
         {
-            var actionCardsPath = AppDomain.CurrentDomain.BaseDirectory + "/images/actionCards/";
+            var path = Path.Combine(Directory.GetCurrentDirectory().Split("RickAndMortyUI\\", StringSplitOptions.RemoveEmptyEntries)[0], "images\\");
+            var actionCardsPath = path + "actionCards\\";
             allActionCards = new ActionCard[]
             {
-                new ActionCard(0,  "Мистер Жопосранчик", actionCardsPath + "singleCards/white1.jpg", CardColor.None, 1),
-                new ActionCard(1,  "Я тоже!", actionCardsPath + "singleCards/white2.jpg", CardColor.None, 1),
-                new ActionCard(2,  "Я пытался пристрелить Саммер 10 минут назад!", actionCardsPath + "singleCards/white3.jpg", CardColor.None, 1),
-                new ActionCard(3,  "Я знаю тебя уже 15 лет", actionCardsPath + "singleCards/years15Blue.jpg", CardColor.Blue, 1),
-                new ActionCard(4,  "Я знаю тебя уже 15 лет", actionCardsPath + "singleCards/years15Green.jpg", CardColor.Green, 1),
-                new ActionCard(5,  "Я знаю тебя уже 15 лет", actionCardsPath + "singleCards/years15Red.jpg", CardColor.Red, 1),
-                new ActionCard(6,  "Джерри", actionCardsPath + "doubleCards/jarryBlue.jpg", CardColor.Blue, 2),
-                new ActionCard(7,  "Джерри", actionCardsPath + "doubleCards/jarryGreen.jpg", CardColor.Green, 2),
-                new ActionCard(8,  "Джерри", actionCardsPath + "doubleCards/jarryRed.jpg", CardColor.Red, 2),
-                new ActionCard(9,  "Морти", actionCardsPath + "tripleCards/mortyBlue.jpg", CardColor.Blue, 3),
-                new ActionCard(10, "Морти", actionCardsPath + "tripleCards/mortyGreen.jpg", CardColor.Green, 3),
-                new ActionCard(11, "Морти", actionCardsPath + "tripleCards/mortyRed.jpg", CardColor.Red, 3),
-                new ActionCard(12, "Саммер", actionCardsPath + "tripleCards/summerBlue.jpg", CardColor.Blue, 3),
-                new ActionCard(13, "Саммер", actionCardsPath + "tripleCards/summerGreen.jpg", CardColor.Green, 3),
-                new ActionCard(14, "Саммер", actionCardsPath + "tripleCards/summerRed.jpg", CardColor.Red, 3),
-                new ActionCard(15, "Что-то не так, Бет?", actionCardsPath + "tripleCards/white4.jpg", CardColor.None, 3),
-                new ActionCard(16, "Стерва-сеструха", actionCardsPath + "tripleCards/white5.jpg", CardColor.None, 3),
-                new ActionCard(17, "Ты не можешь меня убить!", actionCardsPath + "tripleCards/white6.jpg", CardColor.None, 3),
-                new ActionCard(18, "Бет", actionCardsPath + "fiveCards/betBlue.jpg", CardColor.Blue, 5),
-                new ActionCard(19, "Бет", actionCardsPath + "fiveCards/betGreen.jpg", CardColor.Green, 5),
-                new ActionCard(20, "Бет", actionCardsPath + "fiveCards/betRed.jpg", CardColor.Red, 5),
-                new ActionCard(21, "Рик", actionCardsPath + "sixCards/rick.jpg", CardColor.None, 6),
+                new ActionCard(0,  "Мистер Жопосранчик", actionCardsPath + "singleCards\\white1.jpg", CardColor.None, 1),
+                new ActionCard(1,  "Я тоже!", actionCardsPath + "singleCards\\white2.jpg", CardColor.None, 1),
+                new ActionCard(2,  "Я пытался пристрелить Саммер 10 минут назад!", actionCardsPath + "singleCards\\white3.jpg", CardColor.None, 1),
+                new ActionCard(3,  "Я знаю тебя уже 15 лет", actionCardsPath + "singleCards\\years15Blue.jpg", CardColor.Blue, 1),
+                new ActionCard(4,  "Я знаю тебя уже 15 лет", actionCardsPath + "singleCards\\years15Green.jpg", CardColor.Green, 1),
+                new ActionCard(5,  "Я знаю тебя уже 15 лет", actionCardsPath + "singleCards\\years15Red.jpg", CardColor.Red, 1),
+                new ActionCard(6,  "Джерри", actionCardsPath + "doubleCards\\jarryBlue.jpg", CardColor.Blue, 2),
+                new ActionCard(7,  "Джерри", actionCardsPath + "doubleCards\\jarryGreen.jpg", CardColor.Green, 2),
+                new ActionCard(8,  "Джерри", actionCardsPath + "doubleCards\\jarryRed.jpg", CardColor.Red, 2),
+                new ActionCard(9,  "Морти", actionCardsPath + "tripleCards\\mortyBlue.jpg", CardColor.Blue, 3),
+                new ActionCard(10, "Морти", actionCardsPath + "tripleCards\\mortyGreen.jpg", CardColor.Green, 3),
+                new ActionCard(11, "Морти", actionCardsPath + "tripleCards\\mortyRed.jpg", CardColor.Red, 3),
+                new ActionCard(12, "Саммер", actionCardsPath + "tripleCards\\summerBlue.jpg", CardColor.Blue, 3),
+                new ActionCard(13, "Саммер", actionCardsPath + "tripleCards\\summerGreen.jpg", CardColor.Green, 3),
+                new ActionCard(14, "Саммер", actionCardsPath + "tripleCards\\summerRed.jpg", CardColor.Red, 3),
+                new ActionCard(15, "Что-то не так, Бет?", actionCardsPath + "tripleCards\\white4.jpg", CardColor.None, 3),
+                new ActionCard(16, "Стерва-сеструха", actionCardsPath + "tripleCards\\white5.jpg", CardColor.None, 3),
+                new ActionCard(17, "Ты не можешь меня убить!", actionCardsPath + "tripleCards\\white6.jpg", CardColor.None, 3),
+                new ActionCard(18, "Бет", actionCardsPath + "fiveCards\\betBlue.jpg", CardColor.Blue, 5),
+                new ActionCard(19, "Бет", actionCardsPath + "fiveCards\\betGreen.jpg", CardColor.Green, 5),
+                new ActionCard(20, "Бет", actionCardsPath + "fiveCards\\betRed.jpg", CardColor.Red, 5),
+                new ActionCard(21, "Рик", actionCardsPath + "sixCards\\rick.jpg", CardColor.None, 6),
             };
 
-            var characterCardsPath = AppDomain.CurrentDomain.BaseDirectory + "/images/characterCards/";
+            var characterCardsPath = path + "characterCards\\";
             allCharacterCards = new CharacterCard[]
             {
-                new CharacterCard(0,  "Мистер Борегар", characterCardsPath + "blueCards/characterBlue1.jpg", CardColor.Blue),
-                new CharacterCard(1,  "Мистер Жопосранчик", characterCardsPath + "blueCards/characterBlue2.jpg", CardColor.Blue),
-                new CharacterCard(2,  "Рыболюд", characterCardsPath + "blueCards/characterBlue3.jpg", CardColor.Blue),
-                new CharacterCard(3,  "Большой робот", characterCardsPath + "blueCards/characterBlue4.jpg", CardColor.Blue),
-                new CharacterCard(4,  "Мясомурай", characterCardsPath + "blueCards/characterBlue5.jpg", CardColor.Blue),
-                new CharacterCard(5,  "Мужикорог", characterCardsPath + "blueCards/characterBlue6.jpg", CardColor.Blue),
-                new CharacterCard(6,  "Призрак в банке", characterCardsPath + "blueCards/characterBlue7.jpg", CardColor.Blue),
-                new CharacterCard(7,  "Тинклз", characterCardsPath + "blueCards/characterBlue8.jpg", CardColor.Blue | CardColor.Red | CardColor.Green),
-                new CharacterCard(8,  "Бездомная кукла", characterCardsPath + "greenCards/characterGreen1.jpg", CardColor.Green),
-                new CharacterCard(9,  "Мальчик из бассейна", characterCardsPath + "greenCards/characterGreen2.jpg", CardColor.Green),
-                new CharacterCard(10, "Сонный Гэри", characterCardsPath + "greenCards/characterGreen3.jpg", CardColor.Green),
-                new CharacterCard(11, "Чудовище Франкенштейна", characterCardsPath + "greenCards/characterGreen4.jpg", CardColor.Green),
-                new CharacterCard(12, "Ковбойчик на собаке", characterCardsPath + "greenCards/characterGreen5.jpg", CardColor.Green),
-                new CharacterCard(13, "Раптор-фотограф", characterCardsPath + "greenCards/characterGreen6.jpg", CardColor.Green),
-                new CharacterCard(14, "Большая утка", characterCardsPath + "greenCards/characterGreen7.jpg", CardColor.Green),
-                new CharacterCard(15, "Карандашурик", characterCardsPath + "greenCards/characterGreen8.jpg", CardColor.Green),
-                new CharacterCard(16, "Малыш-волшебник", characterCardsPath + "redCards/characterRed1.jpg", CardColor.Red),
-                new CharacterCard(17, "Надувной пёс", characterCardsPath + "redCards/characterRed2.jpg", CardColor.Red),
-                new CharacterCard(18, "Бородатая дама", characterCardsPath + "redCards/characterRed3.jpg", CardColor.Red),
-                new CharacterCard(19, "Кузен Никки", characterCardsPath + "redCards/characterRed4.jpg", CardColor.Red),
-                new CharacterCard(20, "Жираф наоборот", characterCardsPath + "redCards/characterRed5.jpg", CardColor.Red),
-                new CharacterCard(21, "Дядя Стив", characterCardsPath + "redCards/characterRed6.jpg", CardColor.Red),
-                new CharacterCard(22, "Миссис Холодильник", characterCardsPath + "redCards/characterRed7.jpg", CardColor.Red),
-                new CharacterCard(23, "Киборг-амиш", characterCardsPath + "redCards/characterRed8.jpg", CardColor.Red),
+                new CharacterCard(0,  "Мистер Борегар", characterCardsPath + "blueCards\\characterBlue1.jpg", CardColor.Blue),
+                new CharacterCard(1,  "Мистер Жопосранчик", characterCardsPath + "blueCards\\characterBlue2.jpg", CardColor.Blue),
+                new CharacterCard(2,  "Рыболюд", characterCardsPath + "blueCards\\characterBlue3.jpg", CardColor.Blue),
+                new CharacterCard(3,  "Большой робот", characterCardsPath + "blueCards\\characterBlue4.jpg", CardColor.Blue),
+                new CharacterCard(4,  "Мясомурай", characterCardsPath + "blueCards\\characterBlue5.jpg", CardColor.Blue),
+                new CharacterCard(5,  "Мужикорог", characterCardsPath + "blueCards\\characterBlue6.jpg", CardColor.Blue),
+                new CharacterCard(6,  "Призрак в банке", characterCardsPath + "blueCards\\characterBlue7.jpg", CardColor.Blue),
+                new CharacterCard(7,  "Тинклз", characterCardsPath + "blueCards\\characterBlue8.jpg", CardColor.Blue | CardColor.Red | CardColor.Green),
+                new CharacterCard(8,  "Бездомная кукла", characterCardsPath + "greenCards\\characterGreen1.jpg", CardColor.Green),
+                new CharacterCard(9,  "Мальчик из бассейна", characterCardsPath + "greenCards\\characterGreen2.jpg", CardColor.Green),
+                new CharacterCard(10, "Сонный Гэри", characterCardsPath + "greenCards\\characterGreen3.jpg", CardColor.Green),
+                new CharacterCard(11, "Чудовище Франкенштейна", characterCardsPath + "greenCards\\characterGreen4.jpg", CardColor.Green),
+                new CharacterCard(12, "Ковбойчик на собаке", characterCardsPath + "greenCards\\characterGreen5.jpg", CardColor.Green),
+                new CharacterCard(13, "Раптор-фотограф", characterCardsPath + "greenCards\\characterGreen6.jpg", CardColor.Green),
+                new CharacterCard(14, "Большая утка", characterCardsPath + "greenCards\\characterGreen7.jpg", CardColor.Green),
+                new CharacterCard(15, "Карандашурик", characterCardsPath + "greenCards\\characterGreen8.jpg", CardColor.Green),
+                new CharacterCard(16, "Малыш-волшебник", characterCardsPath + "redCards\\characterRed1.jpg", CardColor.Red),
+                new CharacterCard(17, "Надувной пёс", characterCardsPath + "redCards\\characterRed2.jpg", CardColor.Red),
+                new CharacterCard(18, "Бородатая дама", characterCardsPath + "redCards\\characterRed3.jpg", CardColor.Red),
+                new CharacterCard(19, "Кузен Никки", characterCardsPath + "redCards\\characterRed4.jpg", CardColor.Red),
+                new CharacterCard(20, "Жираф наоборот", characterCardsPath + "redCards\\characterRed5.jpg", CardColor.Red),
+                new CharacterCard(21, "Дядя Стив", characterCardsPath + "redCards\\characterRed6.jpg", CardColor.Red),
+                new CharacterCard(22, "Миссис Холодильник", characterCardsPath + "redCards\\characterRed7.jpg", CardColor.Red),
+                new CharacterCard(23, "Киборг-амиш", characterCardsPath + "redCards\\characterRed8.jpg", CardColor.Red),
             };
 
-            var personalityCardsPath = AppDomain.CurrentDomain.BaseDirectory + "/images/personalityCards/";
+            var personalityCardsPath = path + "personalityCards\\";
 
             allPersonalityCards = new PersonalityCard[]
             {
