@@ -3,35 +3,23 @@
         xmlns:vm="using:RickAndMortyUI.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
+        mc:Ignorable="d" d:DesignWidth="1536" d:DesignHeight="864"
+		
         x:Class="RickAndMortyUI.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         Title="RickAndMortyUI"
-		WindowState="Maximized">
+		WindowState="Maximized"
+		>
     <Design.DataContext>
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 	<Window.Styles>
 		<StyleInclude Source="/Styles/TextBoxStyles.axaml"></StyleInclude>
 		<StyleInclude Source="/Styles/ButtonStyles.axaml"></StyleInclude>
+		<StyleInclude Source="/Styles/TextStyles.axaml"></StyleInclude>
 	</Window.Styles>
-
-	<StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
-		<Image Name="logo" Stretch="None" Margin="0 0 0 50"></Image>
-		<TextBox Name="ipInput" MaxWidth="400" Watermark="Введите айпи"></TextBox>
-		<TextBox Name="portInput" MaxWidth="400" Watermark="Введите порт"></TextBox>
-		<TextBox Name="nameInput" MaxWidth="400" Watermark="Введите свой ник"></TextBox>
-		<StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="50" Margin="0 50">
-			<Button DockPanel.Dock="Left" Foreground="LightGray">
-				<TextBlock>Присоединиться</TextBlock>
-			</Button>
-			<Button DockPanel.Dock="Top" Foreground="LightGray">
-				<TextBlock>Создать</TextBlock>
-			</Button>
-			<Button DockPanel.Dock="Right" Foreground="LightGray">
-				<TextBlock>Создать (Продвинутый режим)</TextBlock>
-			</Button>
-		</StackPanel>
-	</StackPanel>
+	<Window.Background>
+		<ImageBrush Source="/Assets/background.png" Stretch="UniformToFill"></ImageBrush>
+	</Window.Background>
 
 </Window>

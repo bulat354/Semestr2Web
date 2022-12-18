@@ -192,7 +192,7 @@ namespace RickAndMortyLibrary.ServerSide
             client.Send(MessageParser.RequestVoteResult());
 
             var message = await WaitFor<VoteMessage>(x => x.Goal == VoteMessageGoal.Result);
-            return message.Result;
+            return message.Result.Value;
         }
 
         public void StopVoting()
