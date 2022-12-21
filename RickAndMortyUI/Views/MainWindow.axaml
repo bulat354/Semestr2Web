@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:RickAndMortyUI.ViewModels"
+		xmlns:controls="using:RickAndMortyUI.Controls"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1536" d:DesignHeight="864"
@@ -14,12 +15,149 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 	<Window.Styles>
-		<StyleInclude Source="/Styles/TextBoxStyles.axaml"></StyleInclude>
-		<StyleInclude Source="/Styles/ButtonStyles.axaml"></StyleInclude>
-		<StyleInclude Source="/Styles/TextStyles.axaml"></StyleInclude>
+		<StyleInclude Source="/Controls/MainPanel.axaml"></StyleInclude>
+		<StyleInclude Source="/Controls/WaitPanel.axaml"></StyleInclude>
+		<StyleInclude Source="/Controls/GameScreen.axaml"></StyleInclude>
+		<StyleInclude Source="/Controls/CardCollection.axaml"></StyleInclude>
+		<StyleInclude Source="/Controls/CardControl.axaml"></StyleInclude>
+		<StyleInclude Source="/Styles/ButtonStyles.axaml"/>
+		<StyleInclude Source="/Styles/TextBoxStyles.axaml"/>
+		<StyleInclude Source="/Styles/TextStyles.axaml"/>
+		<StyleInclude Source="/Styles/GameStyles.axaml"/>
+		<Style Selector="Grid">
+			<Setter Property="Transitions">
+				<Transitions>
+					<DoubleTransition Duration="0:0:0.5" Property="Opacity"></DoubleTransition>
+				</Transitions>
+			</Setter>
+		</Style>
+		<Style Selector="Border.clickable:pointerover">
+			<Setter Property="Background" Value="White"/>
+		</Style>
+		<Style Selector="Border.clickable:pointerover Image">
+			<Setter Property="Opacity" Value="0.75"/>
+		</Style>
 	</Window.Styles>
+	
 	<Window.Background>
 		<ImageBrush Source="/Assets/background.png" Stretch="UniformToFill"></ImageBrush>
 	</Window.Background>
 
+	<Grid Name="mainGrid">
+		<Grid DataContext="{Binding gameGridVM}">
+			<Grid Name="gameGrid" ShowGridLines="False" ColumnDefinitions="0.2* * 2.6* * 0.2*" RowDefinitions="* 2* 2* *" IsVisible="{Binding Visible}" Opacity="{Binding Opacity}">
+				<TextBlock Name="gameText" Grid.Column="2" Classes="dimbo" FontSize="100" Foreground="#f0f0f0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding GameText}"></TextBlock>
+
+				<Border Grid.Column="2" Grid.Row="1" Grid.RowSpan="2" Background="#4d000000" Padding="50" BorderBrush="#4d000000">
+					<ScrollViewer AllowAutoHide="True" DataContext="{Binding CharactersPanel}">
+						<Grid Name="charactersGrid" ShowGridLines="False" ColumnDefinitions="* * *" RowDefinitions="322.2">
+							<!--test-->
+							<!--<Border Grid.Column="0" Grid.Row="0" CornerRadius="7" ClipToBounds="True" Margin="20" VerticalAlignment="Top">
+								<Image Source="/Assets/test.jpg"/>
+							</Border>-->
+							<!--test-->
+						</Grid>
+					</ScrollViewer>
+				</Border>
+
+				<Border Name="character1" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" CornerRadius="5" ClipToBounds="True" Margin="30" VerticalAlignment="Top" HorizontalAlignment="Left" DataContext="{Binding PlayerCharaterVms[0]}">
+					<Image Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+				</Border>
+				<Border Grid.Row="1" DataContext="{Binding PlayerIconVMs[0]}">
+					<Image Name="gamePlayer1" Source="{Binding Source}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Left" VerticalAlignment="Top"></Image>
+				</Border>
+
+				<Border Name="character2" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" CornerRadius="5" ClipToBounds="True" Margin="30" VerticalAlignment="Top" HorizontalAlignment="Left" DataContext="{Binding PlayerCharaterVms[1]}">
+					<Image Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+				</Border>
+				<Border Grid.Row="2" DataContext="{Binding PlayerIconVMs[1]}">
+					<Image Name="gamePlayer2" Source="{Binding Source}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Left" VerticalAlignment="Top"></Image>
+				</Border>
+
+				<Border Name="character3" Grid.Column="3" Grid.Row="1" Grid.ColumnSpan="2" CornerRadius="5" ClipToBounds="True" Margin="30" VerticalAlignment="Top" HorizontalAlignment="Right" DataContext="{Binding PlayerCharaterVms[3]}">
+					<Image Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+				</Border>
+				<Border Grid.Row="1" Grid.Column="4" DataContext="{Binding PlayerIconVMs[3]}">
+					<Image Name="gamePlayer3" Source="{Binding Source}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Right" VerticalAlignment="Top"></Image>
+				</Border>
+
+				<Border Name="character4" Grid.Column="3" Grid.Row="2" Grid.ColumnSpan="2" CornerRadius="5" ClipToBounds="True" Margin="30" VerticalAlignment="Top" HorizontalAlignment="Right" DataContext="{Binding PlayerCharaterVms[4]}">
+					<Image Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+				</Border>
+				<Border Grid.Row="2" Grid.Column="4" DataContext="{Binding PlayerIconVMs[4]}">
+					<Image Name="gamePlayer4" Source="{Binding Source}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Right" VerticalAlignment="Top"></Image>
+				</Border>
+
+				<Border Name="character" Grid.Column="1" Grid.Row="4" CornerRadius="2" ClipToBounds="True" DataContext="{Binding PlayerCharaterVms[4]}">
+					<Image Source="{Binding Source}" IsVisible="{Binding IsVisible}" VerticalAlignment="Top"/>
+				</Border>
+				<Border Name="person" Grid.Column="3" Grid.Row="4" CornerRadius="2" ClipToBounds="True" DataContext="{Binding PersonVM}">
+					<Image Source="{Binding Source}" IsVisible="{Binding IsVisible}" VerticalAlignment="Top"/>
+				</Border>
+
+				<Border Grid.Column="2" Grid.Row="4" DataContext="{Binding HandPanel}">
+					<Grid Name="handGrid" ShowGridLines="False" ColumnDefinitions="0.5* * 0.5*">
+						<!--test-->
+						<!--<Border Grid.Column="1" CornerRadius="2" Grid.ColumnSpan="10" HorizontalAlignment="Left" ClipToBounds="True">
+							<Image Source="/Assets/test1.jpg" VerticalAlignment="Top"/>
+						</Border>-->
+						<!--test-->
+					</Grid>
+				</Border>
+
+				<Grid Name="gameOverlayGrid" ShowGridLines="False" Grid.ColumnSpan="5" Grid.RowSpan="4" Background="#4d000000" ColumnDefinitions="* * *" RowDefinitions="* 3* *" IsHitTestVisible="False" IsVisible="{Binding OverlayVisible}">
+					<Image Source="{Binding OverlaySource}" Grid.Column="1" Grid.Row="1" IsHitTestVisible="False"></Image>
+				</Grid>
+			</Grid>
+		</Grid>
+
+		<Grid DataContext="{Binding waitGridVM}">
+			<Grid Name="waitGrid" ColumnDefinitions="0.5* 0.5* 0.5* * 0.5* 0.5* 0.5*" RowDefinitions="* 0.4* * 0.2* * 0.2* * 0.2*" IsVisible="{Binding Visible}" Opacity="{Binding Opacity}">
+				<Image Source="/Assets/logo.png" Grid.Column="2" Grid.ColumnSpan="3"/>
+				<TextBlock Name="waitText" Classes="dimbo" Foreground="#f0f0f0" Grid.Column="3" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="50" Text="{Binding WaitText}"></TextBlock>
+
+				<Border Grid.Column="1" Grid.Row="4" DataContext="{Binding IconVMs[0]}">
+					<Image Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+				</Border>
+				<Border Grid.Column="2" Grid.Row="2" DataContext="{Binding IconVMs[1]}">
+					<Image Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+				</Border>
+				<Border Grid.Column="3" Grid.Row="6" DataContext="{Binding IconVMs[2]}">
+					<Image Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+				</Border>
+				<Border Grid.Column="4" Grid.Row="2" DataContext="{Binding IconVMs[3]}">
+					<Image Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+				</Border>
+				<Border Grid.Column="5" Grid.Row="4" DataContext="{Binding IconVMs[4]}">
+					<Image Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+				</Border>
+
+				<TextBlock Name="timerText" Classes="dimbo" Foreground="#f0f0f0" FontSize="100" HorizontalAlignment="Center" Grid.Column="3" Grid.Row="4" Text="{Binding Counter}"></TextBlock>
+			</Grid>
+		</Grid>
+
+		<Grid DataContext="{Binding menuGridVM}">
+			<Grid Name="menuGrid" ColumnDefinitions="0.1* * 0.1*" RowDefinitions="0.2* * 0.4* 0.7*" ShowGridLines="False" Classes="disappear" IsVisible="{Binding Visible}" Opacity="{Binding Opacity}">
+				<Image Source="/Assets/logo.png" Grid.Column="1" Grid.Row="1"></Image>
+		
+				<Grid ColumnDefinitions="* * *" RowDefinitions="* * *" ShowGridLines="False" Grid.Column="1" Grid.Row="2">
+					<TextBlock Name="ErrorText" Text="{Binding ErrorText}" Foreground="#f0d00000" FontSize="20" Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" TextAlignment="Center" Classes="dimbo"></TextBlock>
+					<TextBox Name="ipText" Watermark="Введите IP-адрес" FontSize="20" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" Text="{Binding IpText, Mode=OneWayToSource}"></TextBox>
+					<TextBox Name="portText" Watermark="Введите порт" FontSize="20" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" Text="{Binding PortText, Mode=OneWayToSource}"></TextBox>
+				</Grid>
+		
+				<Grid ColumnDefinitions="0.7* * * * 0.7*" RowDefinitions="0.5* *" Grid.Column="1" Grid.Row="3" ShowGridLines="False">
+					<Button Name="createButton" HorizontalAlignment="Center" Grid.Column="1">
+						<TextBlock HorizontalAlignment="Center">Создать</TextBlock>
+					</Button>
+					<Button Name="joinButton" HorizontalAlignment="Center" Grid.Column="2">
+						<TextBlock HorizontalAlignment="Center">Присоединиться</TextBlock>
+					</Button>
+					<Button Name="advancedButton" HorizontalAlignment="Center" Grid.Column="3">
+						<TextBlock HorizontalAlignment="Center">Продвинутый</TextBlock>
+					</Button>
+				</Grid>
+			</Grid>
+		</Grid>
+	</Grid>
 </Window>

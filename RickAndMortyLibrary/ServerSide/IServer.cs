@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DPTPLibrary;
 using RickAndMortyLibrary.Common;
+using RickAndMortyLibrary.ServerSide.Game;
 
 namespace RickAndMortyLibrary.ServerSide
 {

@@ -1,0 +1,46 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:RickAndMortyUI.Controls">
+
+	<Design.PreviewWith>
+		<StackPanel Background="Black" Width="1536" Height="864">
+			<controls:MainPanel />
+		</StackPanel>
+	</Design.PreviewWith>
+
+	<Style Selector="controls|MainPanel">
+		<Setter Property="IpText" Value=""></Setter>
+		<Setter Property="PortText" Value=""></Setter>
+		<Setter Property="ErrorText" Value=""></Setter>
+		<Setter Property="Transitions">
+			<Transitions>
+				<DoubleTransition Duration="0:0:0.5" Property="Opacity"></DoubleTransition>
+			</Transitions>
+		</Setter>
+		<Setter Property="Template">
+			<ControlTemplate>
+				<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical" Spacing="20">
+					<Image Source="/Assets/logo.png" Stretch="None"></Image>
+					<TextBlock Classes="dimbo" Foreground="#f0090909" FontSize="20" Text="{TemplateBinding ErrorText}"></TextBlock>
+					<TextBox MaxWidth="400" Watermark="Введите IP-адрес" Text="{TemplateBinding IpText}"></TextBox>
+					<TextBox MaxWidth="400" Watermark="Введите порт" Text="{TemplateBinding PortText}"></TextBox>
+					<StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="50" Margin="0 50">
+						<Button Command="{TemplateBinding CreateCommand}">
+							<TextBlock>Создать</TextBlock>
+						</Button>
+						<Button Command="{TemplateBinding CreateAdvancedCommand}">
+							<TextBlock>Создать (продвинутый режим)</TextBlock>
+						</Button>
+						<Button Command="{TemplateBinding JoinCommand}">
+							<TextBlock>Присоединиться</TextBlock>
+						</Button>
+					</StackPanel>
+				</StackPanel>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+
+	<StyleInclude Source="/Styles/TextBoxStyles.axaml"></StyleInclude>
+	<StyleInclude Source="/Styles/TextStyles.axaml"></StyleInclude>
+	<StyleInclude Source="/Styles/ButtonStyles.axaml"></StyleInclude>
+</Styles>

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
+using System.Net;
 using MyProtocol;
 
 namespace DPTPLibrary
@@ -17,7 +18,15 @@ namespace DPTPLibrary
 
         public DPTPClient(string hostname, int port)
         {
-            _client = new TcpClient(hostname, port);
+            _client = new TcpClient();
+
+            var done = _client.ConnectAsync(hostname, port).Wait(5000);
+            if (!done)
+            {
+                _client.Close();
+                throw new SocketException();
+            }
+
             _stream = _client.GetStream();
         }
 

@@ -24,7 +24,6 @@ namespace RickAndMortyLibrary.ClientSide
 
             UserName = userName;
             client.Connect(ip, port);
-            client.Send(MessageParser.JoinPlayer(userName));
 
             this.ui = await ui.ToLocalPlayerScreen();
 

@@ -5,11 +5,8 @@ using System;
 using Avalonia.Media.Imaging;
 using Avalonia.Media;
 using Avalonia.Styling;
-using RickAndMortyLibrary.Common;
 using System.Threading.Tasks;
-using RickAndMortyLibrary.ServerSide.Game;
 using RickAndMortyLibrary.Common.Game.Cards;
-using RickAndMortyLibrary.ServerSide;
 using RickAndMortyLibrary.Common.Game;
 using RickAndMortyUI.ViewModels;
 using Avalonia.Data;
@@ -19,21 +16,20 @@ using Avalonia.Layout;
 using System.Security.Cryptography;
 using System.Threading;
 using Avalonia.Platform;
+using System.Collections.Generic;
+using System.Linq;
+using RickAndMortyLibrary;
+using RickAndMortyLibrary.Test;
+using Avalonia.Threading;
 
 namespace RickAndMortyUI.Views
 {
-    public partial class MainWindow : Window, IMainUI, IPlayerUI
+    public partial class MainWindow : Window
     {
-        private string imagesPath;
-
         private MainWindowViewModel model;
-        private StackPanel mainPanel;
-
-        private TextBox ipInput;
-        private TextBox portInput;
-        private TextBox nameInput;
-
         private IAssetLoader assets;
+
+        private Thread mainThread;
 
         public MainWindow()
         {
@@ -42,363 +38,224 @@ namespace RickAndMortyUI.Views
             DataContextChanged += (s, e) =>
             {
                 model = (MainWindowViewModel)DataContext;
-                InitializeMainPanel();
+                model.menuGridVM.Appear();
+
+                model.gameGridVM.PlayerIconVMs = model.waitGridVM.IconVMs;
+                model.gameGridVM.CharactersPanel.MainGrid = charactersGrid;
+                model.gameGridVM.HandPanel.MainGrid = handGrid;
             };
 
             assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+
+            menuGrid.IsVisible = true;
+
+            mainThread = Thread.CurrentThread;
+
+            createButton.Click += (s, e) => Task.Run(CreateClicked);
+            joinButton.Click += (s, e) => Task.Run(JoinClicked);
+
+            //Task.Run(Test);
         }
 
-        public async void InitializeMainPanel()
+        public void Invoke(Action action)
         {
-            await Task.Delay(500);
-
-            model = (MainWindowViewModel)DataContext;
-            model.Window = this;
-
-            mainPanel = new StackPanel();
-            mainPanel.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center;
-            mainPanel.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
-            mainPanel.Spacing = 20;
-            mainPanel.Bind(OpacityProperty, new Binding("MainVisibility"));
-            mainPanel.Transitions = new Transitions
-            {
-                GetOpacityTransition(0.5)
-            };
-
-            var logo = new Image();
-            logo.Stretch = Stretch.None;
-            logo.Margin = new Thickness(0, 0, 0, 50);
-            logo.Source = new Bitmap(assets.Open(new Uri("avares://RickAndMortyUI/Assets/logo.png")));
-            mainPanel.Children.Add(logo);
-
-            ipInput = new TextBox();
-            ipInput.MaxWidth = 400;
-            ipInput.Watermark = "Введите IP-адрес";
-            mainPanel.Children.Add(ipInput);
-
-            portInput = new TextBox();
-            portInput.MaxWidth = 400;
-            portInput.Watermark = "Введите порт";
-            mainPanel.Children.Add(portInput);
-
-            nameInput = new TextBox();
-            nameInput.MaxWidth = 400;
-            nameInput.Watermark = "Введите ник";
-            mainPanel.Children.Add(nameInput);
-
-            var buttonsPanel = new StackPanel();
-            buttonsPanel.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center;
-            buttonsPanel.Orientation = Avalonia.Layout.Orientation.Horizontal;
-            buttonsPanel.Spacing = 50;
-            buttonsPanel.Margin = new Thickness(0, 50);
-
-            var joinButton = new Button();
-            joinButton.Click += (s, e) => JoinClicked();
-            joinButton.Content = new TextBlock() { Text = "Присоединиться" };
-            buttonsPanel.Children.Add(joinButton);
-
-            var createButton = new Button();
-            createButton.Click += (s, e) => CreateClicked(false);
-            createButton.Content = new TextBlock() { Text = "Создать" };
-            buttonsPanel.Children.Add(createButton);
-
-            var createAdvButton = new Button();
-            createAdvButton.Click += (s, e) => CreateClicked(true);
-            createAdvButton.Content = new TextBlock() { Text = "Создать (продвинутый режим)" };
-            buttonsPanel.Children.Add(createAdvButton);
-
-            mainPanel.Children.Add(buttonsPanel);
-
-            Content = mainPanel;
-            InvalidateVisual();
-
-            model.MainVisibility = 1;
+            Dispatcher.UIThread.Post(action);
         }
 
-        private StackPanel waitPanel;
-        private CancellationTokenSource waiting;
-
-        private Image[] playerImages;
-
-        public async void InitializeWaitPanel()
+        public int[] GetRandomIds()
         {
-            await Task.Delay(500);
+            var enumerable = Enumerable.Range(0, 5).ToArray();
 
-            model.StartWaitingTextAnim(1000, waiting);
+            var random = new Random();
 
-            waitPanel = new StackPanel();
-            waitPanel.Margin = new Thickness(0, 50);
-
-            var logo = new Image();
-            logo.Source = new Bitmap(assets.Open(new Uri("avares://RickAndMortyUI/Assets/logo.png")));
-            logo.Width = 400;
-            waitPanel.Children.Add(logo);
-
-            var waitingText = new TextBlock();
-            waitingText.Classes.Add("dimbo");
-            waitingText.HorizontalAlignment = HorizontalAlignment.Center;
-            waitingText.FontSize = 30;
-            waitingText.Foreground = new SolidColorBrush(Color.FromRgb(240, 240, 240));
-            waitingText.Bind(TextBox.TextProperty, new Binding("WaitText"));
-            waitPanel.Children.Add(waitingText);
-
-            playerImages = new Image[5];
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < enumerable.Length; i++)
             {
-                var player = new Image();
-                player.Width = 100;
-                player.Opacity = 0;
-                player.Source = new Bitmap(assets.Open(new Uri($"avares://RickAndMortyUI/Assets/user{i + 1}.png")));
-                playerImages[i] = player;
+                enumerable.Swap(i, random.Next(0, enumerable.Length));
             }
 
-            var countdownText = new TextBlock();
-            countdownText.Width = 100;
-            countdownText.Classes.Add("dimbo");
-            countdownText.FontSize = 50;
-            countdownText.Foreground = new SolidColorBrush(Color.FromRgb(240, 240, 240));
-            countdownText.TextAlignment = TextAlignment.Center;
-            countdownText.VerticalAlignment = VerticalAlignment.Center;
-            countdownText.Bind(TextBlock.TextProperty, new Binding("WaitTimer"));
-
-            var panel1 = new StackPanel();
-            panel1.HorizontalAlignment = HorizontalAlignment.Center;
-            panel1.Spacing = 100;
-            panel1.Margin = new Thickness(0, 25);
-            panel1.Children.Add(playerImages[0]);
-            panel1.Children.Add(playerImages[1]);
-            panel1.Orientation = Orientation.Horizontal;
-            waitPanel.Children.Add(panel1);
-
-            var panel2 = new StackPanel();
-            panel2.HorizontalAlignment = HorizontalAlignment.Center;
-            panel2.Margin = new Thickness(0, 50);
-            panel2.Spacing = 200;
-            panel2.Children.Add(playerImages[2]);
-            panel2.Children.Add(countdownText);
-            panel2.Children.Add(playerImages[3]);
-            panel2.Orientation = Orientation.Horizontal;
-            waitPanel.Children.Add(panel2);
-
-            playerImages[4].Margin = new Thickness(0, 25);
-            playerImages[4].HorizontalAlignment = HorizontalAlignment.Center;
-            waitPanel.Children.Add(playerImages[4]);
-
-            Content = waitPanel;
-            InvalidateVisual();
-
-            waiting = new CancellationTokenSource();
-            DataContextChanged += (s, e) => ((MainWindowViewModel)DataContext).StartWaitingTextAnim(1000, waiting);
-
-            model.WaitVisibility = 1;
+            return enumerable;
         }
 
-        public DoubleTransition GetOpacityTransition(double durationSec, double delaySec = -1)
-        {
-            var trans = new DoubleTransition();
-            if (durationSec > 0)
-                trans.Duration = TimeSpan.FromSeconds(durationSec);
-            if (delaySec > 0)
-                trans.Delay = TimeSpan.FromSeconds(delaySec);
-            trans.Property = OpacityProperty;
+        private CancellationTokenSource startGame;
 
-            return trans;
+        public void GoToWaitScreen(bool counter)
+        {
+            model.menuGridVM.Disappear();
+            model.waitGridVM.Appear();
+
+            var wait = model.waitGridVM;
+
+            startGame = new CancellationTokenSource();
+            if (counter)
+                Task.Run(() => wait.StartCounting(10, startGame));
+            Task.Run(() => wait.StartAnimation(startGame.Token));
         }
 
-        #region
-        public void CreateClicked(bool isAdvanced)
+        public void GoToGameScreen()
         {
-            waiting = new CancellationTokenSource();
-
-            Test(waiting.Token);
-
-            model.ToWaitScreen();
-            InitializeWaitPanel();
+            model.waitGridVM.Disappear();
+            model.gameGridVM.Appear();
         }
 
-        public void JoinClicked()
+        public IImage GetImage(string fileName)
         {
-            waiting = new CancellationTokenSource();
-
-            Test(waiting.Token);
-
-            model.ToWaitScreen();
-            InitializeWaitPanel();
+            return new Bitmap(assets.Open(new Uri($"avares://RickAndMortyUI/Assets/{fileName}")));
         }
 
-        public async void Test(CancellationToken token)
+        //-----------------------------------------------------
+        public int Id { get; set; }
+
+        #region Creating game
+        private Server server;
+
+        public async Task CreateClicked()
         {
-            await Task.Delay(5000, token);
+            if (!model.menuGridVM.ValidateInputs())
+                return;
 
-            playerImages[4].Opacity = 1;
-            playerImages[4].InvalidateVisual();
+            GoToWaitScreen(true);
 
-            await Task.Delay(2000, token);
+            await CreateGame();
 
-            playerImages[0].Opacity = 1;
-            playerImages[0].InvalidateVisual();
+            GoToGameScreen();
+        }
 
-            await Task.Delay(1000, token);
+        public async Task CreateGame()
+        {
+            GetInputs(out var ip, out var port);
+            server = new Server(ip, port);
+            
+            await CheckForJoinPlayers(2);
+        }
 
-            playerImages[3].Opacity = 1;
-            playerImages[3].InvalidateVisual();
+        public async Task CheckForJoinPlayers(int minCount)
+        {
+            var ids = GetRandomIds();
+            ShowAndBindPlayer(ids[0]);
 
-            await Task.Delay(5000, token);
+            for (int i = 1; i < 5; i++)
+            {
+                var client = await server.AwaitJoining(startGame.Token);
+                if (startGame.IsCancellationRequested && i < minCount)
+                {
+                    startGame = new CancellationTokenSource();
+                }
+                else if (startGame.IsCancellationRequested || model.waitGridVM.CountingEnded)
+                {
+                    await server.BroadcastMessage("player stop");
+                }
 
-            playerImages[2].Opacity = 1;
-            playerImages[2].InvalidateVisual();
+                if (client != null)
+                {
+                    await Task.Delay(500);
 
-            await Task.Delay(3000, token);
+                    await server.BroadcastMessage("player " + ids[i].ToString());
 
-            playerImages[1].Opacity = 1;
-            playerImages[1].InvalidateVisual();
+                    foreach (var player in model.waitGridVM.IconVMs)
+                    {
+                        if (player.Id >= 0)
+                            await client.SendMessage("player " + player.Id);
+                    }
 
-            await Task.Delay(100000, token);
+                    ShowAndBindPlayer(ids[i]);
 
-            model.WaitVisibility = 0;
-            InitializeMainPanel();
+                    Task.Run(() => model.waitGridVM.ShowText("Приветствуем игрока!", 3000));
+                }
+                else
+                {
+                    return;
+                }
+            }
         }
         #endregion
-        public void AddCardToHand(ActionCard card)
+
+        #region Joining to game
+        private Client client;
+
+        public async Task JoinClicked()
         {
-            throw new NotImplementedException();
+            if (!model.menuGridVM.ValidateInputs())
+                return;
+
+            try
+            {
+                await JoinToGame();
+            }
+            catch
+            {
+                model.menuGridVM.ErrorText = "Ошибка подключения";
+                return;
+            }
+
+            GoToWaitScreen(false);
+
+            await CheckForNewPlayers();
+
+            //Task.Run(() => model.waitGridVM.ShowText("ok", 10000));
+            startGame.Cancel();
+
+            GoToGameScreen();
         }
 
-        public void AddCharacter(Character character)
+        public async Task JoinToGame()
         {
-            throw new NotImplementedException();
+            GetInputs(out var ip, out var port);
+            client = new Client(ip, port);
         }
 
-        public void AddPlayer(string userName)
+        public async Task CheckForNewPlayers()
         {
-            throw new NotImplementedException();
+            for (int i = 0; i < 5; i++)
+            {
+                var msg = await client.WaitForMessage("player");
+
+                if (msg == null)
+                {
+                    i--;
+                    continue;
+                }
+
+                var id = msg.Split()[1];
+                if (id == "stop")
+                    break;
+
+                ShowAndBindPlayer(int.Parse(id));
+
+                Task.Run(() => model.waitGridVM.ShowText("Приветствуем игрока!", 3000));
+            }
         }
 
-        public Task<ActionCard> ChooseActionFromHand()
+        public async Task StartReceiveMessages()
         {
-            throw new NotImplementedException();
+
+        }
+        #endregion
+        //------------------------------------------------------
+
+        #region Common
+        public void GetInputs(out string ip, out int port)
+        {
+            var menu = model.menuGridVM;
+
+            ip = menu.IpText;
+            port = int.Parse(menu.PortText);
         }
 
-        public Task<Character> GetCharacter()
+        public void ShowAndBindPlayer(int id)
         {
-            throw new NotImplementedException();
+            var wait = model.waitGridVM;
+            var index = wait.GetEmptyPlayer();
+            
+            if (index >= 0)
+            {
+                var image = GetImage($"user{id + 1}.png");
+                wait.IconVMs[index].Id = id;
+                wait.IconVMs[index].Source = image;
+                wait.IconVMs[index].IsVisible = true;
+            }
         }
 
-        public void Lose()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void PlayerFailed(string playerName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void RemoveCharacter(Character character, int timeout)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void RemovePlayer(string userName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Character> SelectCharacter()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<CardColor> SelectColor(CardColor[] colors)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<string> SelectPlayer()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetCharacter(Character character, string userName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void ShowCharacterPerson(Character character)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void ShowError(string error)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void ShowTopFromPack(PersonalityCard card)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void StartTimer(int sec)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void StartVoting()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void StopTimer()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void StopVoting()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task WaitForPressStart()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task WaitForStartVoting()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> WaitForVotingResult()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Win()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IMainUI> ToMainScreen()
-        {
-            throw new NotImplementedException();
-        }
-
-        #region
-        public Task<IPlayerUI> ToHostPlayerScreen()
-        {
-            throw new NotImplementedException();
-        }
-        public Task<IPlayerUI> ToLocalPlayerScreen()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task WaitForConnecting(out string ipAddress, out int port, out string userName)
-        {
-            throw new NotImplementedException();
-        }
-        public Task WaitForCreating(out string ipAddress, out int port, out GameType gameType, out string userName)
+        public async Task<StringMessage> ProcessMessage(StringMessage message)
         {
             throw new NotImplementedException();
         }

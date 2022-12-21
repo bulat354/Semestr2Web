@@ -14,10 +14,12 @@ namespace RickAndMortyLibrary.ServerSide
     public class Server : IServer
     {
         private DPTPListener listener;
-        private List<IPlayer> players;
+        private List<IPlayer> players = new List<IPlayer>();
         private IMainUI ui;
 
         private CancellationTokenSource stopWaitingPlayers;
+
+        public List<int> PlayerIds { get; set; }
 
         public async Task Start(IMainUI ui)
         {
@@ -33,11 +35,13 @@ namespace RickAndMortyLibrary.ServerSide
             var hostUI = await ui.ToHostPlayerScreen();
 
             // не забываем добавить хоста в список игроков
-            var host = new HostPlayer(userName, hostUI);
+            var host = new HostPlayer(PlayerIds[PlayerIds.Count - 1].ToString(), hostUI);
+            PlayerIds.RemoveAt(PlayerIds.Count - 1);
             AddPlayer(host);
             // ждем присоединения игроков
             await WaitForPlayers(type, host);
 
+            /*
             // создаем игру, инициализируем и стартуем
             GameBase game = type == GameType.Normal ? new NormalGame() : new AdvancedGame();
             game.Init(players.ToArray());
@@ -49,6 +53,7 @@ namespace RickAndMortyLibrary.ServerSide
                 .Where(p => p is RemotePlayer)
                 .ForEach(p => ((RemotePlayer)p).Disconnect());
             listener.Stop();
+            */
         }
 
         private async Task WaitForPlayers(GameType type, HostPlayer host)
@@ -66,10 +71,15 @@ namespace RickAndMortyLibrary.ServerSide
             while (true)
             {
                 // ожидаем присоединения игрока
-                var client = new Client(await listener.AcceptClientAsync().WaitAsync(stopWaitingPlayers.Token));
-                // если хост нажал на играть
-                if (stopWaitingPlayers.IsCancellationRequested)
+                Client client;
+                try
+                {
+                    client = new Client(await listener.AcceptClientAsync().WaitAsync(stopWaitingPlayers.Token));
+                }
+                catch
+                {
                     break;
+                }
 
                 // если игроков уже максимальное число
                 if (players.Count == max)
@@ -82,7 +92,9 @@ namespace RickAndMortyLibrary.ServerSide
                 else
                 {
                     // создаем удаленного игрока
-                    var player = new RemotePlayer(client);
+                    var player = new RemotePlayer(client) { UserName = PlayerIds[PlayerIds.Count - 1].ToString() };
+                    PlayerIds.RemoveAt(PlayerIds.Count - 1);
+                    player.SendNewPlayer(player);
                     player.StartReceiving();
                     // добавляем игрока
                     AddPlayer(player);
@@ -106,9 +118,14 @@ namespace RickAndMortyLibrary.ServerSide
         private async void PlayerDisconnect(RemotePlayer player)
         {
             // ожидаем отсоединения игрока до того момента, когда хост нажал на готов
-            await player.Disconnected.Task.WaitAsync(stopWaitingPlayers.Token);
-            if (stopWaitingPlayers.IsCancellationRequested)
+            try
+            {
+                await player.Disconnected.Task.WaitAsync(stopWaitingPlayers.Token);
+            }
+            catch
+            {
                 return;
+            }
 
             // удаляем игрока и сообщаем об этом другим
             lock (players)
@@ -116,9 +133,11 @@ namespace RickAndMortyLibrary.ServerSide
                 players.ForEach(p => p.SendRemovePlayer(player));
                 players.Remove(player);
             }
+
+            PlayerIds.Add(int.Parse(player.UserName));
         }
 
-        private async void PlayerReady(HostPlayer player, int minCount)
+        private async Task PlayerReady(HostPlayer player, int minCount)
         {
             while (true)
             {

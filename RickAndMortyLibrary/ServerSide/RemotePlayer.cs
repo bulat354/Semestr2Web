@@ -42,8 +42,6 @@ namespace RickAndMortyLibrary.ServerSide
 
         public async void StartReceiving()
         {
-            UserName = ((PlayerMessage)await client.Receive()).UserName;
-
             while (true)
             {
                 var message = await client.Receive();
