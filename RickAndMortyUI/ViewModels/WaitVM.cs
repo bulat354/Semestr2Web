@@ -20,8 +20,8 @@ namespace RickAndMortyUI.ViewModels
                 new PlayerIconVM(),
                 new PlayerIconVM()
             };
-
-        private string _waitText = "Ожидание игроков";
+        
+        private string _waitText;
         public string WaitText
         {
             get => _waitText;
@@ -37,6 +37,8 @@ namespace RickAndMortyUI.ViewModels
 
         public bool CountingEnded { get; private set; }
 
+        private bool ableToSetText;
+
         public void Show(int index)
         {
             IconVMs[index].Show();
@@ -45,18 +47,6 @@ namespace RickAndMortyUI.ViewModels
         public void Hide(int index)
         {
             IconVMs[index].Hide();
-        }
-
-        public void Bind(IImage[] images)
-        {
-            if (images.Length == IconVMs.Length)
-            {
-                var i = 0;
-                foreach (var vm in IconVMs)
-                {
-                    vm.Bind(images[i++]);
-                }
-            }
         }
 
         public void Bind(int index, IImage image)
@@ -87,8 +77,6 @@ namespace RickAndMortyUI.ViewModels
             Counter = "0";
             src.Cancel();
         }
-
-        private bool ableToSetText;
 
         public async Task StartAnimation(CancellationToken token)
         {
@@ -133,6 +121,18 @@ namespace RickAndMortyUI.ViewModels
             }
 
             return -1;
+        }
+
+        public override void Reset()
+        {
+            base.Reset();
+
+            foreach (var item in IconVMs)
+                item.Hide();
+
+            WaitText = "Ожидание игроков";
+            Counter = string.Empty;
+            CountingEnded = false;
         }
     }
 }

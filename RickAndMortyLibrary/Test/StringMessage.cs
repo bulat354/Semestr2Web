@@ -9,18 +9,21 @@ namespace RickAndMortyLibrary.Test
 {
     public class StringMessage
     {
-        public string Message { get; set; }
+        public MessageFirstGoal FirstGoal { get; set; }
+        public MessageSecondGoal SecondGoal { get; set; }
+        public string? Message { get; set; }
 
         public StringMessage() { }
-
-        public StringMessage(string message) 
-        { 
+        public StringMessage(MessageFirstGoal firstGoal, string? message = null, MessageSecondGoal secondGoal = MessageSecondGoal.None)
+        {
+            FirstGoal = firstGoal;
+            SecondGoal = secondGoal;
             Message = message;
         }
 
         public DPTPPacket ToPacket()
         {
-            var packet = DPTPPacket.Create(0, 0);
+            var packet = DPTPPacket.Create((byte)FirstGoal, (byte)SecondGoal);
             if (Message != null)
                 packet.SetValueRaw(0, Encoding.ASCII.GetBytes(Message));
 
@@ -32,17 +35,17 @@ namespace RickAndMortyLibrary.Test
             var message = new StringMessage();
             if (packet.GetField(0) != null)
                 message.Message = Encoding.ASCII.GetString(packet.GetValueRaw(0));
+            message.FirstGoal = (MessageFirstGoal)packet.PacketType;
+            message.SecondGoal = (MessageSecondGoal)packet.PacketSubtype;
 
             return message;
         }
 
-        public static implicit operator StringMessage(string str) => new StringMessage(str);
+        public int ToInt() => int.Parse(Message);
 
-        public static implicit operator string(StringMessage message) => message.Message;
-
-        public string[] Split()
+        public static StringMessage Create(MessageFirstGoal firstGoal, string message, MessageSecondGoal secondGoal = MessageSecondGoal.None)
         {
-            return Message.Split(' ');
+            return new StringMessage(firstGoal, message, secondGoal);
         }
     }
 }

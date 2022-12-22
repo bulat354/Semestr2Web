@@ -38,5 +38,7 @@ namespace RickAndMortyUI.ViewModels
             await Task.Delay(500);
             Visible = false;
         }
+
+        public virtual void Reset() { }
     }
 }

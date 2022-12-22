@@ -11,7 +11,7 @@ namespace RickAndMortyLibrary.ServerSide
     /// Колода карт.
     /// </summary>
     /// <typeparam name="T">Тип карт</typeparam>
-    internal interface ICardsPack<T> where T : Card
+    public interface ICardsPack<T> where T : Card
     {
         int Count { get; }
 

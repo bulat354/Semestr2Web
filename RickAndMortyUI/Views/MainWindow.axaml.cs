@@ -24,12 +24,12 @@ using Avalonia.Threading;
 
 namespace RickAndMortyUI.Views
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, IPlayerController
     {
         private MainWindowViewModel model;
         private IAssetLoader assets;
 
-        private Thread mainThread;
+        private CancellationTokenSource waiting;
 
         public MainWindow()
         {
@@ -49,20 +49,92 @@ namespace RickAndMortyUI.Views
 
             menuGrid.IsVisible = true;
 
-            mainThread = Thread.CurrentThread;
-
             createButton.Click += (s, e) => Task.Run(CreateClicked);
             joinButton.Click += (s, e) => Task.Run(JoinClicked);
-
-            //Task.Run(Test);
         }
 
-        public void Invoke(Action action)
+        // -----------------------------------------------Server-----------------------------------------------
+        #region Server Side
+        private Server server;
+
+        /// <summary>
+        /// When player click to Create
+        /// </summary>
+        /// <returns></returns>
+        public async Task CreateClicked()
         {
-            Dispatcher.UIThread.Post(action);
+            //if (!model.menuGridVM.ValidateInputs())
+            //    return;
+
+            GoToWaitScreen(true);
+
+            //GetInputs(out var ip, out var port);
+            var ip = "127.0.0.1";
+            var port = 8888;
+            server = new Server(ip, port);
+
+            await CheckForJoinPlayers(2);
+
+            GoToGameScreen();
+
+            var game = new GameController();
+            game.Game = model.gameGridVM;
+            game.PlayerControllers = server.Clients
+                .Select(x => (IPlayerController)new RemotePlayerController(x))
+                .Append(this).ToArray();
+
+            await game.Start();
         }
 
-        public int[] GetRandomIds()
+        /// <summary>
+        /// Waiting for players connecting
+        /// </summary>
+        /// <param name="minCount">Minimal number of players to start game</param>
+        public async Task CheckForJoinPlayers(int minCount)
+        {
+            var ids = GenerateIDs();
+            ShowAndBindPlayer(ids[0]);
+
+            for (int i = 1; i < 5; i++)
+            {
+                var client = await server.AwaitJoining(waiting.Token);
+                if (waiting.IsCancellationRequested && i < minCount)
+                {
+                    waiting = new CancellationTokenSource();
+                }
+                else if (waiting.IsCancellationRequested || model.waitGridVM.CountingEnded)
+                {
+                    await server.BroadcastMessage(StringMessage.Create(MessageFirstGoal.Player, null, MessageSecondGoal.Stop));
+                }
+
+                if (client != null)
+                {
+                    await Task.Delay(500);
+
+                    await server.BroadcastMessage(StringMessage.Create(MessageFirstGoal.Player, ids[i].ToString()));
+
+                    foreach (var player in model.waitGridVM.IconVMs)
+                    {
+                        if (player.Id >= 0)
+                            await client.SendMessage(StringMessage.Create(MessageFirstGoal.Player, player.Id.ToString()));
+                    }
+
+                    await client.SendMessage(StringMessage.Create(MessageFirstGoal.Timer, model.waitGridVM.Counter));
+
+                    ShowAndBindPlayer(ids[i]);
+                    Task.Run(() => model.waitGridVM.ShowText("Приветствуем игрока!", 3000));
+                }
+                else
+                {
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Generate random ids for players. Used by host.
+        /// </summary>
+        public int[] GenerateIDs()
         {
             var enumerable = Enumerable.Range(0, 5).ToArray();
 
@@ -75,111 +147,26 @@ namespace RickAndMortyUI.Views
 
             return enumerable;
         }
-
-        private CancellationTokenSource startGame;
-
-        public void GoToWaitScreen(bool counter)
-        {
-            model.menuGridVM.Disappear();
-            model.waitGridVM.Appear();
-
-            var wait = model.waitGridVM;
-
-            startGame = new CancellationTokenSource();
-            if (counter)
-                Task.Run(() => wait.StartCounting(10, startGame));
-            Task.Run(() => wait.StartAnimation(startGame.Token));
-        }
-
-        public void GoToGameScreen()
-        {
-            model.waitGridVM.Disappear();
-            model.gameGridVM.Appear();
-        }
-
-        public IImage GetImage(string fileName)
-        {
-            return new Bitmap(assets.Open(new Uri($"avares://RickAndMortyUI/Assets/{fileName}")));
-        }
-
-        //-----------------------------------------------------
-        public int Id { get; set; }
-
-        #region Creating game
-        private Server server;
-
-        public async Task CreateClicked()
-        {
-            if (!model.menuGridVM.ValidateInputs())
-                return;
-
-            GoToWaitScreen(true);
-
-            await CreateGame();
-
-            GoToGameScreen();
-        }
-
-        public async Task CreateGame()
-        {
-            GetInputs(out var ip, out var port);
-            server = new Server(ip, port);
-            
-            await CheckForJoinPlayers(2);
-        }
-
-        public async Task CheckForJoinPlayers(int minCount)
-        {
-            var ids = GetRandomIds();
-            ShowAndBindPlayer(ids[0]);
-
-            for (int i = 1; i < 5; i++)
-            {
-                var client = await server.AwaitJoining(startGame.Token);
-                if (startGame.IsCancellationRequested && i < minCount)
-                {
-                    startGame = new CancellationTokenSource();
-                }
-                else if (startGame.IsCancellationRequested || model.waitGridVM.CountingEnded)
-                {
-                    await server.BroadcastMessage("player stop");
-                }
-
-                if (client != null)
-                {
-                    await Task.Delay(500);
-
-                    await server.BroadcastMessage("player " + ids[i].ToString());
-
-                    foreach (var player in model.waitGridVM.IconVMs)
-                    {
-                        if (player.Id >= 0)
-                            await client.SendMessage("player " + player.Id);
-                    }
-
-                    ShowAndBindPlayer(ids[i]);
-
-                    Task.Run(() => model.waitGridVM.ShowText("Приветствуем игрока!", 3000));
-                }
-                else
-                {
-                    return;
-                }
-            }
-        }
         #endregion
 
+        // -----------------------------------------------Client-----------------------------------------------
         #region Joining to game
         private Client client;
 
+        /// <summary>
+        /// When player click to Join
+        /// </summary>
         public async Task JoinClicked()
         {
-            if (!model.menuGridVM.ValidateInputs())
-                return;
+            //if (!model.menuGridVM.ValidateInputs())
+            //    return;
 
             try
             {
-                await JoinToGame();
+                //GetInputs(out var ip, out var port);
+                var ip = "127.0.0.1";
+                var port = 8888;
+                client = new Client(ip, port);
             }
             catch
             {
@@ -188,26 +175,21 @@ namespace RickAndMortyUI.Views
             }
 
             GoToWaitScreen(false);
-
             await CheckForNewPlayers();
-
-            //Task.Run(() => model.waitGridVM.ShowText("ok", 10000));
-            startGame.Cancel();
+            waiting.Cancel();
 
             GoToGameScreen();
+            await StartReceiveMessages();
         }
 
-        public async Task JoinToGame()
-        {
-            GetInputs(out var ip, out var port);
-            client = new Client(ip, port);
-        }
-
+        /// <summary>
+        /// Wait for new players and add them to wait screen 
+        /// </summary>
         public async Task CheckForNewPlayers()
         {
             for (int i = 0; i < 5; i++)
             {
-                var msg = await client.WaitForMessage("player");
+                var msg = await client.WaitForMessage(MessageFirstGoal.Player | MessageFirstGoal.Timer, MessageSecondGoal.None | MessageSecondGoal.Stop);
 
                 if (msg == null)
                 {
@@ -215,24 +197,40 @@ namespace RickAndMortyUI.Views
                     continue;
                 }
 
-                var id = msg.Split()[1];
-                if (id == "stop")
+                if (msg.FirstGoal == MessageFirstGoal.Timer)
+                {
+                    Task.Run(() => model.waitGridVM.StartCounting(msg.ToInt(), waiting));
+                    continue;
+                }
+                if (msg.SecondGoal == MessageSecondGoal.Stop)
                     break;
 
-                ShowAndBindPlayer(int.Parse(id));
+                ShowAndBindPlayer(msg.ToInt());
 
-                Task.Run(() => model.waitGridVM.ShowText("Приветствуем игрока!", 3000));
+                Task.Run(() => model.waitGridVM.ShowText("Новый игрок!", 3000));
             }
         }
 
+        /// <summary>
+        /// Wait for messages from server and process them
+        /// </summary>
         public async Task StartReceiveMessages()
         {
-
+            while (true)
+            {
+                var message = await client.WaitForMessage(MessageFirstGoal.Any, MessageSecondGoal.Any);
+                var response = await ProcessMessage(message);
+                if (response != null)
+                    await client.SendMessage(response);
+            }
         }
         #endregion
-        //------------------------------------------------------
 
+        // -----------------------------------------------Common-----------------------------------------------
         #region Common
+        /// <summary>
+        /// Get ip and port inputs from menu screen
+        /// </summary>
         public void GetInputs(out string ip, out int port)
         {
             var menu = model.menuGridVM;
@@ -241,6 +239,58 @@ namespace RickAndMortyUI.Views
             port = int.Parse(menu.PortText);
         }
 
+        /// <summary>
+        /// Load image from folder assets
+        /// </summary>
+        public IImage GetImage(string fileName)
+        {
+            return new Bitmap(assets.Open(new Uri($"avares://RickAndMortyUI/Assets/{fileName}")));
+        }
+
+        /// <summary>
+        /// Going to waiting for players screen after main menu
+        /// </summary>
+        public void GoToWaitScreen(bool toStartTimer)
+        {
+            model.menuGridVM.Disappear();
+
+            model.waitGridVM.Reset();
+            model.waitGridVM.Appear();
+
+            var wait = model.waitGridVM;
+
+            waiting = new CancellationTokenSource();
+
+            if (toStartTimer)
+                Task.Run(() => wait.StartCounting(10, waiting));
+            Task.Run(() => wait.StartAnimation(waiting.Token));
+        }
+
+        /// <summary>
+        /// Going to main game screen after waiting for players
+        /// </summary>
+        public void GoToGameScreen()
+        {
+            model.waitGridVM.Disappear();
+
+            model.gameGridVM.Reset();
+            model.gameGridVM.Appear();
+        }
+
+        /// <summary>
+        /// Going to main menu screen after game
+        /// </summary>
+        public void GoToMainScreen()
+        {
+            model.gameGridVM.Disappear();
+
+            model.menuGridVM.Reset();
+            model.menuGridVM.Appear();
+        }
+
+        /// <summary>
+        /// Add player to wait screen
+        /// </summary>
         public void ShowAndBindPlayer(int id)
         {
             var wait = model.waitGridVM;
@@ -255,9 +305,35 @@ namespace RickAndMortyUI.Views
             }
         }
 
-        public async Task<StringMessage> ProcessMessage(StringMessage message)
+        private List<Control> characterControls = new List<Control>();
+
+        /// <summary>
+        /// Process message from server and send response if necessary
+        /// </summary>
+        public async Task<StringMessage?> ProcessMessage(StringMessage message)
         {
-            throw new NotImplementedException();
+            switch (message.FirstGoal)
+            {
+                case (MessageFirstGoal.Character):
+                    return await ProcessCharacter(message);
+            }
+
+            return null;
+        }
+
+        public async Task<StringMessage?> ProcessCharacter(StringMessage message)
+        {
+            switch (message.SecondGoal)
+            {
+                case (MessageSecondGoal.Add):
+                    var card = CardsImporter.GetCard<CharacterCard>(message.ToInt());
+                    var image = GetImage(card.ImagePath);
+                    var control = await model.gameGridVM.CharactersPanel.AddCharacter(image);
+                    characterControls.Add(control);
+                    break;
+            }
+
+            return null;
         }
         #endregion
     }

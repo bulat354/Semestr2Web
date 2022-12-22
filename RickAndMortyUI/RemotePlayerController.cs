@@ -9,9 +9,27 @@ namespace RickAndMortyUI
 {
     public class RemotePlayerController : IPlayerController
     {
-        public Task<StringMessage> ProcessMessage(StringMessage message)
+        private Client _client;
+
+        public RemotePlayerController(Client client)
         {
-            throw new NotImplementedException();
+            _client = client;
+        }
+
+        public async Task<StringMessage?> ProcessMessage(StringMessage message)
+        {
+            await _client.SendMessage(message);
+
+            var goals = IsRequest(message);
+            if (goals != null)
+                return await _client.WaitForMessage(goals.Item1, goals.Item2);
+
+            return null;
+        }
+
+        public Tuple<MessageFirstGoal, MessageSecondGoal>? IsRequest(StringMessage message)
+        {
+            return null;
         }
     }
 }

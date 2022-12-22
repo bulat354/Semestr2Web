@@ -27,13 +27,13 @@ namespace RickAndMortyLibrary.Test
 
         private List<StringMessage> _readyMessages = new List<StringMessage>();
 
-        public async Task<StringMessage?> WaitForMessage(string starts)
+        public async Task<StringMessage?> WaitForMessage(MessageFirstGoal firstGoal, MessageSecondGoal secondGoal)
         {
             lock (_readyMessages)
             {
                 foreach (var message in _readyMessages)
                 {
-                    if (message.Message.StartsWith(starts))
+                    if (firstGoal.HasFlag(message.FirstGoal) && secondGoal.HasFlag(message.SecondGoal))
                     {
                         _readyMessages.Remove(message);
                         return message;
@@ -49,9 +49,9 @@ namespace RickAndMortyLibrary.Test
                     if (packet != null)
                     {
                         var msg = StringMessage.Parse(packet);
-                        if (msg != null && msg.Message != null)
+                        if (msg != null)
                         {
-                            if (msg.Message.StartsWith(starts))
+                            if (firstGoal.HasFlag(msg.FirstGoal) && secondGoal.HasFlag(msg.SecondGoal))
                                 return msg;
                             else
                                 lock (_readyMessages)

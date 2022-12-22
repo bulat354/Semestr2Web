@@ -8,7 +8,7 @@ using RickAndMortyLibrary.Common.Game;
 
 namespace RickAndMortyLibrary.ServerSide
 {
-    internal class CardsPack<T> : ICardsPack<T>
+    public class CardsPack<T> : ICardsPack<T>
         where T : Card
     {
         private List<int> _cards;

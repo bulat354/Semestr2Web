@@ -11,7 +11,7 @@ namespace RickAndMortyLibrary.Common.Game
     /// <summary>
     /// Класс для импортирования карт.
     /// </summary>
-    internal static class CardsImporter
+    public static class CardsImporter
     {
         private static ActionCard[] allActionCards;
         private static CharacterCard[] allCharacterCards;
