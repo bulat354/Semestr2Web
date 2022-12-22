@@ -22,6 +22,7 @@ using RickAndMortyLibrary;
 using RickAndMortyLibrary.Test;
 using Avalonia.Threading;
 using static RickAndMortyUI.Controls.WaitPanel;
+using System.Reflection;
 
 namespace RickAndMortyUI.Views
 {
@@ -344,6 +345,10 @@ namespace RickAndMortyUI.Views
                     return await ProcessAction(message);
                 case (MessageFirstGoal.Person):
                     return await ProcessPerson(message);
+                case (MessageFirstGoal.Message):
+                    Task.Run(() => gameVM.ShowText(message.Message,
+                        message.SecondGoal == MessageSecondGoal.ForTime ? 3000 : -1));
+                    break;
             }
 
             return null;
@@ -395,6 +400,7 @@ namespace RickAndMortyUI.Views
             var card = CardsImporter.GetCard<CharacterCard>(cardId);
             var image = GetImage(card.ImagePath);
 
+            gameVM.PlayerCharaterVms[index].CardId = cardId;
             gameVM.PlayerCharaterVms[index].Bind(image);
             gameVM.PlayerCharaterVms[index].Show();
         }
@@ -458,6 +464,7 @@ namespace RickAndMortyUI.Views
             var card = CardsImporter.GetCard<PersonalityCard>(id);
             var image = GetImage(card.ImagePath);
 
+            gameVM.PersonVM.CardId = id;
             gameVM.PersonVM.Bind(image);
             gameVM.PersonVM.Show();
         }

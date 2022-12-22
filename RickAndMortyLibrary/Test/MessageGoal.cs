@@ -15,6 +15,7 @@ namespace RickAndMortyLibrary.Test
         Character = 8,
         Action = 16,
         Person = 32,
+        Message = 64,
 
         Any = None | Player | Timer | Character | Action
     }
@@ -28,6 +29,7 @@ namespace RickAndMortyLibrary.Test
         Remove = 8,
         Attach = 16,
         Detach = 32,
+        ForTime = 64,
 
         Any = None | Stop | Add | Remove | Attach | Detach
     }

@@ -82,5 +82,19 @@ namespace RickAndMortyUI.ViewModels
                 }
             }
         }
+
+        public async Task ShowText(string text, int time = -1)
+        {
+            if (time < 0)
+                GameText = text;
+            else
+            {
+                var oldText = GameText;
+                GameText = text;
+                await Task.Delay(time);
+                if (GameText == text)
+                    GameText = oldText;
+            }
+        }
     }
 }
