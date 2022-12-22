@@ -13,6 +13,7 @@ namespace RickAndMortyLibrary.Test
     {
         private DPTPClient _client;
 
+        public int Id { get; set; }
         public bool Connected { get => _client.IsConnected; }
 
         public Client(DPTPClient client)
@@ -56,6 +57,39 @@ namespace RickAndMortyLibrary.Test
                             else
                                 lock (_readyMessages)
                                     _readyMessages.Add(msg);
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public async Task<StringMessage?> WaitForAny()
+        {
+            lock (_readyMessages)
+            {
+                if (_readyMessages.Count > 0)
+                {
+                    var message = _readyMessages[0];
+                    _readyMessages.RemoveAt(0);
+                    return message;
+                }
+            }
+
+            try
+            {
+                while (true)
+                {
+                    var packet = await _client.ReceivePacket();
+                    if (packet != null)
+                    {
+                        var msg = StringMessage.Parse(packet);
+                        if (msg != null)
+                        {
+                            return msg;
                         }
                     }
                 }

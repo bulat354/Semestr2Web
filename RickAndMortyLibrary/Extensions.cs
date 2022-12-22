@@ -34,5 +34,17 @@ namespace RickAndMortyLibrary
             array[first] = array[second];
             array[second] = temp;
         }
+
+        public static int FirstIndex<T>(this IEnumerable<T> array, Func<T, bool> predicate)
+        {
+            var i = 0;
+            foreach (var item in array)
+            {
+                if (predicate(item))
+                    break;
+                i++;
+            }
+            return i;
+        }
     }
 }

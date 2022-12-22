@@ -13,6 +13,7 @@ namespace RickAndMortyUI.ViewModels
     public class CharactersPanelVM : ViewModelBase
     {
         public Grid MainGrid { get; set; }
+        public GameVM GameVM { get; set; }
 
         public List<int> EmptyPlaces { get; set; } = new List<int>()
         {
@@ -68,6 +69,15 @@ namespace RickAndMortyUI.ViewModels
                 border.Margin = new Avalonia.Thickness(20);
                 border.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top;
                 border.BoxShadow = new BoxShadows(BoxShadow.Parse("3 3 10 4 #40000000"));
+                border.PointerEnter += (s, e) =>
+                {
+                    GameVM.OverlayVisible = true;
+                    GameVM.OverlaySource = source;
+                };
+                border.PointerLeave += (s, e) =>
+                {
+                    GameVM.OverlayVisible = false;
+                };
 
                 var image = new Image();
                 image.Source = source;

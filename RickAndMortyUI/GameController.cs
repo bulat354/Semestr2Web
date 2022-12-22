@@ -23,6 +23,10 @@ namespace RickAndMortyUI
         private ICardsPack<PersonalityCard> personsPack;
 
         private List<Tuple<CharacterCard, PersonalityCard, CharacterTag>> table;
+        private List<Tuple<CharacterCard, PersonalityCard, CharacterTag>> players;
+
+        private List<ActionCard> gameDiscardPile;
+        private List<ActionCard> roundDiscardPile;
 
         /// <summary>
         /// Starts game and awaits for end
@@ -50,6 +54,31 @@ namespace RickAndMortyUI
                 table.Add(tuple);
 
                 await BroadcastMessage(StringMessage.Create(MessageFirstGoal.Character, tuple.Item1.Id.ToString(), MessageSecondGoal.Add));
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                foreach (var player in PlayerControllers)
+                {
+                    var card = actionsPack.Pop();
+                    player.ProcessMessage(StringMessage.Create(MessageFirstGoal.Action, card.Id.ToString(), MessageSecondGoal.Add));
+                }
+            }
+
+            if (IsAdvancedMode)
+            {
+                players = new List<Tuple<CharacterCard, PersonalityCard, CharacterTag>>();
+
+                var persons = CardsImporter.GetPlayerPersonalityCardsPack();
+                persons.Shuffle();
+                foreach (var player in PlayerControllers)
+                {
+                    var tuple = Tuple.Create(charactersPack.Pop(), persons.Pop(), CharacterTag.None);
+                    players.Add(tuple);
+
+                    await BroadcastMessage(StringMessage.Create(MessageFirstGoal.Character, $"{tuple.Item1.Id} {player.Id}", MessageSecondGoal.Attach));
+                    await player.ProcessMessage(StringMessage.Create(MessageFirstGoal.Person, $"{tuple.Item2.Id}", MessageSecondGoal.Attach));
+                }
             }
         }
 

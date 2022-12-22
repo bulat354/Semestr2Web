@@ -12,6 +12,7 @@ namespace RickAndMortyUI.ViewModels
     public class HandPanelVM : ViewModelBase
     {
         public Grid MainGrid { get; set; }
+        public GameVM GameVM { get; set; }
 
         public int ColumnsCount { get; set; }
 
@@ -52,6 +53,15 @@ namespace RickAndMortyUI.ViewModels
                 border.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
                 border.BorderBrush = new SolidColorBrush(Color.Parse("#000000"), 0.2);
                 border.BorderThickness = new Avalonia.Thickness(1, 0, 0, 0);
+                border.PointerEnter += (s, e) =>
+                {
+                    GameVM.OverlayVisible = true;
+                    GameVM.OverlaySource = source;
+                };
+                border.PointerLeave += (s, e) =>
+                {
+                    GameVM.OverlayVisible = false;
+                };
 
                 var image = new Image();
                 image.Source = source;

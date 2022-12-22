@@ -10,6 +10,8 @@ namespace RickAndMortyUI.ViewModels
 {
     public class CharacterVM : ViewModelBase
     {
+        public int CardId { get; set; }
+
         private bool _isVisible = false;
         public bool IsVisible
         {

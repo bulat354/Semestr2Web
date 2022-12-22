@@ -14,6 +14,7 @@ namespace RickAndMortyLibrary.Test
         Timer = 4,
         Character = 8,
         Action = 16,
+        Person = 32,
 
         Any = None | Player | Timer | Character | Action
     }

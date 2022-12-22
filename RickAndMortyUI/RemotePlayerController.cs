@@ -11,9 +11,12 @@ namespace RickAndMortyUI
     {
         private Client _client;
 
-        public RemotePlayerController(Client client)
+        public int Id { get; set; }
+
+        public RemotePlayerController(Client client, int id)
         {
             _client = client;
+            Id = id;
         }
 
         public async Task<StringMessage?> ProcessMessage(StringMessage message)

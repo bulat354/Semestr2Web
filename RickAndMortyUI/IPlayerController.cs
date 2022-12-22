@@ -9,6 +9,8 @@ namespace RickAndMortyUI
 {
     public interface IPlayerController
     {
+        public int Id { get; }
+
         Task<StringMessage?> ProcessMessage(StringMessage message);
     }
 }

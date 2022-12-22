@@ -21,6 +21,7 @@ using System.Linq;
 using RickAndMortyLibrary;
 using RickAndMortyLibrary.Test;
 using Avalonia.Threading;
+using static RickAndMortyUI.Controls.WaitPanel;
 
 namespace RickAndMortyUI.Views
 {
@@ -31,6 +32,10 @@ namespace RickAndMortyUI.Views
 
         private CancellationTokenSource waiting;
 
+        private MenuVM menuVM => model.menuGridVM;
+        private WaitVM waitVM => model.waitGridVM;
+        private GameVM gameVM => model.gameGridVM;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -38,11 +43,24 @@ namespace RickAndMortyUI.Views
             DataContextChanged += (s, e) =>
             {
                 model = (MainWindowViewModel)DataContext;
-                model.menuGridVM.Appear();
+                menuVM.Appear();
 
-                model.gameGridVM.PlayerIconVMs = model.waitGridVM.IconVMs;
-                model.gameGridVM.CharactersPanel.MainGrid = charactersGrid;
-                model.gameGridVM.HandPanel.MainGrid = handGrid;
+                gameVM.PlayerIconVMs = waitVM.IconVMs;
+                gameVM.CharactersPanel.MainGrid = charactersGrid;
+                gameVM.HandPanel.MainGrid = handGrid;
+
+                character.PointerEnter += gameVM.OnPointerEnter;
+                character.PointerLeave += gameVM.OnPointerLeave;
+                character1.PointerEnter += gameVM.OnPointerEnter;
+                character1.PointerLeave += gameVM.OnPointerLeave;
+                character2.PointerEnter += gameVM.OnPointerEnter;
+                character2.PointerLeave += gameVM.OnPointerLeave;
+                character3.PointerEnter += gameVM.OnPointerEnter;
+                character3.PointerLeave += gameVM.OnPointerLeave;
+                character4.PointerEnter += gameVM.OnPointerEnter;
+                character4.PointerLeave += gameVM.OnPointerLeave;
+                person.PointerEnter += gameVM.OnPointerEnter;
+                person.PointerLeave += gameVM.OnPointerLeave;
             };
 
             assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
@@ -63,7 +81,7 @@ namespace RickAndMortyUI.Views
         /// <returns></returns>
         public async Task CreateClicked()
         {
-            //if (!model.menuGridVM.ValidateInputs())
+            //if (!menuVM.ValidateInputs())
             //    return;
 
             GoToWaitScreen(true);
@@ -78,10 +96,12 @@ namespace RickAndMortyUI.Views
             GoToGameScreen();
 
             var game = new GameController();
-            game.Game = model.gameGridVM;
+
+            game.Game = gameVM;
             game.PlayerControllers = server.Clients
-                .Select(x => (IPlayerController)new RemotePlayerController(x))
+                .Select(x => (IPlayerController)new RemotePlayerController(x, x.Id))
                 .Append(this).ToArray();
+            game.IsAdvancedMode = true;
 
             await game.Start();
         }
@@ -102,7 +122,7 @@ namespace RickAndMortyUI.Views
                 {
                     waiting = new CancellationTokenSource();
                 }
-                else if (waiting.IsCancellationRequested || model.waitGridVM.CountingEnded)
+                else if (waiting.IsCancellationRequested || waitVM.CountingEnded)
                 {
                     await server.BroadcastMessage(StringMessage.Create(MessageFirstGoal.Player, null, MessageSecondGoal.Stop));
                 }
@@ -113,16 +133,17 @@ namespace RickAndMortyUI.Views
 
                     await server.BroadcastMessage(StringMessage.Create(MessageFirstGoal.Player, ids[i].ToString()));
 
-                    foreach (var player in model.waitGridVM.IconVMs)
+                    foreach (var player in waitVM.IconVMs)
                     {
                         if (player.Id >= 0)
                             await client.SendMessage(StringMessage.Create(MessageFirstGoal.Player, player.Id.ToString()));
                     }
 
-                    await client.SendMessage(StringMessage.Create(MessageFirstGoal.Timer, model.waitGridVM.Counter));
+                    await client.SendMessage(StringMessage.Create(MessageFirstGoal.Timer, waitVM.Counter));
+                    client.Id = ids[i];
 
                     ShowAndBindPlayer(ids[i]);
-                    Task.Run(() => model.waitGridVM.ShowText("Приветствуем игрока!", 3000));
+                    Task.Run(() => waitVM.ShowText("Приветствуем игрока!", 3000));
                 }
                 else
                 {
@@ -158,7 +179,7 @@ namespace RickAndMortyUI.Views
         /// </summary>
         public async Task JoinClicked()
         {
-            //if (!model.menuGridVM.ValidateInputs())
+            //if (!menuVM.ValidateInputs())
             //    return;
 
             try
@@ -170,7 +191,7 @@ namespace RickAndMortyUI.Views
             }
             catch
             {
-                model.menuGridVM.ErrorText = "Ошибка подключения";
+                menuVM.ErrorText = "Ошибка подключения";
                 return;
             }
 
@@ -199,7 +220,7 @@ namespace RickAndMortyUI.Views
 
                 if (msg.FirstGoal == MessageFirstGoal.Timer)
                 {
-                    Task.Run(() => model.waitGridVM.StartCounting(msg.ToInt(), waiting));
+                    Task.Run(() => waitVM.StartCounting(msg.ToInt(), waiting));
                     continue;
                 }
                 if (msg.SecondGoal == MessageSecondGoal.Stop)
@@ -207,7 +228,7 @@ namespace RickAndMortyUI.Views
 
                 ShowAndBindPlayer(msg.ToInt());
 
-                Task.Run(() => model.waitGridVM.ShowText("Новый игрок!", 3000));
+                Task.Run(() => waitVM.ShowText("Новый игрок!", 3000));
             }
         }
 
@@ -218,7 +239,7 @@ namespace RickAndMortyUI.Views
         {
             while (true)
             {
-                var message = await client.WaitForMessage(MessageFirstGoal.Any, MessageSecondGoal.Any);
+                var message = await client.WaitForAny();
                 var response = await ProcessMessage(message);
                 if (response != null)
                     await client.SendMessage(response);
@@ -233,7 +254,7 @@ namespace RickAndMortyUI.Views
         /// </summary>
         public void GetInputs(out string ip, out int port)
         {
-            var menu = model.menuGridVM;
+            var menu = menuVM;
 
             ip = menu.IpText;
             port = int.Parse(menu.PortText);
@@ -252,12 +273,12 @@ namespace RickAndMortyUI.Views
         /// </summary>
         public void GoToWaitScreen(bool toStartTimer)
         {
-            model.menuGridVM.Disappear();
+            menuVM.Disappear();
 
-            model.waitGridVM.Reset();
-            model.waitGridVM.Appear();
+            waitVM.Reset();
+            waitVM.Appear();
 
-            var wait = model.waitGridVM;
+            var wait = waitVM;
 
             waiting = new CancellationTokenSource();
 
@@ -271,10 +292,10 @@ namespace RickAndMortyUI.Views
         /// </summary>
         public void GoToGameScreen()
         {
-            model.waitGridVM.Disappear();
+            waitVM.Disappear();
 
-            model.gameGridVM.Reset();
-            model.gameGridVM.Appear();
+            gameVM.Reset();
+            gameVM.Appear();
         }
 
         /// <summary>
@@ -282,10 +303,10 @@ namespace RickAndMortyUI.Views
         /// </summary>
         public void GoToMainScreen()
         {
-            model.gameGridVM.Disappear();
+            gameVM.Disappear();
 
-            model.menuGridVM.Reset();
-            model.menuGridVM.Appear();
+            menuVM.Reset();
+            menuVM.Appear();
         }
 
         /// <summary>
@@ -293,7 +314,7 @@ namespace RickAndMortyUI.Views
         /// </summary>
         public void ShowAndBindPlayer(int id)
         {
-            var wait = model.waitGridVM;
+            var wait = waitVM;
             var index = wait.GetEmptyPlayer();
             
             if (index >= 0)
@@ -305,7 +326,10 @@ namespace RickAndMortyUI.Views
             }
         }
 
-        private List<Control> characterControls = new List<Control>();
+        public int Id => waitVM.IconVMs[2].Id;
+
+        private Dictionary<int, Control> characterControls = new Dictionary<int, Control>();
+        private List<Tuple<int, Control>> handControls = new List<Tuple<int, Control>>();
 
         /// <summary>
         /// Process message from server and send response if necessary
@@ -316,6 +340,10 @@ namespace RickAndMortyUI.Views
             {
                 case (MessageFirstGoal.Character):
                     return await ProcessCharacter(message);
+                case (MessageFirstGoal.Action):
+                    return await ProcessAction(message);
+                case (MessageFirstGoal.Person):
+                    return await ProcessPerson(message);
             }
 
             return null;
@@ -326,14 +354,117 @@ namespace RickAndMortyUI.Views
             switch (message.SecondGoal)
             {
                 case (MessageSecondGoal.Add):
-                    var card = CardsImporter.GetCard<CharacterCard>(message.ToInt());
-                    var image = GetImage(card.ImagePath);
-                    var control = await model.gameGridVM.CharactersPanel.AddCharacter(image);
-                    characterControls.Add(control);
+                    await ProcessCharacterAdd(message);
+                    break;
+                case (MessageSecondGoal.Remove):
+                    await ProcessCharacterRemove(message);
+                    break;
+                case (MessageSecondGoal.Attach):
+                    await ProcessCharacterAttach(message);
+                    break;
+                case (MessageSecondGoal.Detach):
+                    await ProcessCharacterDetach(message);
                     break;
             }
 
             return null;
+        }
+
+        private async Task ProcessCharacterAdd(StringMessage message)
+        {
+            var card = CardsImporter.GetCard<CharacterCard>(message.ToInt());
+            var image = GetImage(card.ImagePath);
+            var control = await gameVM.CharactersPanel.AddCharacter(image);
+            characterControls.Add(card.Id, control);
+        }
+
+        private async Task ProcessCharacterRemove(StringMessage message)
+        {
+            var id = message.ToInt();
+            var control = characterControls[id];
+            gameVM.CharactersPanel.RemoveCharacter(control);
+            characterControls.Remove(id);
+        }
+
+        private async Task ProcessCharacterAttach(StringMessage message)
+        {
+            var split = message.Message.Split();
+            var cardId = int.Parse(split[0]);
+            var playerId = int.Parse(split[1]);
+            var index = gameVM.PlayerIconVMs.FirstIndex(x => x.Id == playerId);
+            var card = CardsImporter.GetCard<CharacterCard>(cardId);
+            var image = GetImage(card.ImagePath);
+
+            gameVM.PlayerCharaterVms[index].Bind(image);
+            gameVM.PlayerCharaterVms[index].Show();
+        }
+
+        private async Task ProcessCharacterDetach(StringMessage message)
+        {
+            var index = gameVM.PlayerIconVMs.FirstIndex(x => x.Id == message.ToInt());
+            gameVM.PlayerCharaterVms[index].Hide();
+        }
+
+        public async Task<StringMessage?> ProcessAction(StringMessage message)
+        {
+            switch (message.SecondGoal)
+            {
+                case (MessageSecondGoal.Add):
+                    await ProcessActionAdd(message);
+                    break;
+                case (MessageSecondGoal.Remove):
+                    await ProcessActionRemove(message);
+                    break;
+            }
+
+            return null;
+        }
+
+        private async Task ProcessActionAdd(StringMessage message)
+        {
+            var id = message.ToInt();
+            var card = CardsImporter.GetCard<ActionCard>(id);
+            var image = GetImage(card.ImagePath);
+            var control = await gameVM.HandPanel.AddAction(image);
+            handControls.Add(Tuple.Create(id, control));
+        }
+
+        private async Task ProcessActionRemove(StringMessage message)
+        {
+            var id = message.ToInt();
+            var tuple = handControls.First(x => x.Item1 == id);
+            gameVM.HandPanel.RemoveAction(tuple.Item2);
+            handControls.Remove(tuple);
+        }
+
+        public async Task<StringMessage?> ProcessPerson(StringMessage message)
+        {
+            switch (message.SecondGoal)
+            {
+                case (MessageSecondGoal.Attach):
+                    await ProcessPersonAttach(message);
+                    break;
+                case (MessageSecondGoal.Detach):
+                    await ProcessPersonDetach(message);
+                    break;
+            }
+
+            return null;
+        }
+
+        private async Task ProcessPersonAttach(StringMessage message)
+        {
+            var id = message.ToInt();
+            var card = CardsImporter.GetCard<PersonalityCard>(id);
+            var image = GetImage(card.ImagePath);
+
+            gameVM.PersonVM.Bind(image);
+            gameVM.PersonVM.Show();
+        }
+
+        private async Task ProcessPersonDetach(StringMessage message)
+        {
+            gameVM.PersonVM.Hide();
         }
         #endregion
     }

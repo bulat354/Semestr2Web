@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using ReactiveUI;
 using Avalonia.Media;
+using Avalonia.Input;
+using Avalonia.Controls;
 
 namespace RickAndMortyUI.ViewModels
 {
@@ -44,6 +46,41 @@ namespace RickAndMortyUI.ViewModels
         {
             get => _overlaySource;
             set => this.RaiseAndSetIfChanged(ref _overlaySource, value);
+        }
+
+        public override void Reset()
+        {
+            CharactersPanel.GameVM = this;
+            HandPanel.GameVM = this;
+        }
+
+        public void OnPointerEnter(object? sender, PointerEventArgs args)
+        {
+            if (sender is Control control)
+            {
+                if (control.DataContext is CharacterVM vm)
+                {
+                    if (vm != null && vm.IsVisible)
+                    {
+                        OverlaySource = vm.Source;
+                        OverlayVisible = true;
+                    }
+                }
+            }
+        }
+
+        public void OnPointerLeave(object? sender, PointerEventArgs args)
+        {
+            if (sender is Control control)
+            {
+                if (control.DataContext is CharacterVM vm)
+                {
+                    if (vm != null && vm.IsVisible)
+                    {
+                        OverlayVisible = false;
+                    }
+                }
+            }
         }
     }
 }
