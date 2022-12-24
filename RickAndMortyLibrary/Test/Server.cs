@@ -26,11 +26,13 @@ namespace RickAndMortyLibrary.Test
             Clients = new List<Client>();
         }
 
-        public async Task<Client> AwaitJoining(CancellationToken token)
+        public Client AwaitJoining(CancellationToken token)
         {
             try
             {
-                var client = new Client(await _listener.AcceptClientAsync().WaitAsync(token));
+                var task = _listener.AcceptClientAsync(token);
+                task.Wait();
+                var client = new Client(task.Result);
 
                 Clients.Add(client);
                 return client;
@@ -41,7 +43,7 @@ namespace RickAndMortyLibrary.Test
             }
         }
 
-        public async Task BroadcastMessage(StringMessage message)
+        public void BroadcastMessage(StringMessage message)
         {
             try
             {

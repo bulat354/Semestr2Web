@@ -9,7 +9,9 @@ namespace RickAndMortyLibrary.Test
     [Flags]
     public enum CharacterTag
     {
-        None = 1
+        None = 0,
+        Immutable = 1,
+        CanKill = 2
 
     }
 }

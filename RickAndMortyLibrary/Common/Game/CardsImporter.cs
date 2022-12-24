@@ -57,7 +57,7 @@ namespace RickAndMortyLibrary.Common.Game
                 new CharacterCard(4,  "Мясомурай", characterCardsPath + "blueCards/characterBlue5.jpg", CardColor.Blue),
                 new CharacterCard(5,  "Мужикорог", characterCardsPath + "blueCards/characterBlue6.jpg", CardColor.Blue),
                 new CharacterCard(6,  "Призрак в банке", characterCardsPath + "blueCards/characterBlue7.jpg", CardColor.Blue),
-                new CharacterCard(7,  "Тинклз", characterCardsPath + "blueCards/characterBlue8.jpg", CardColor.Blue | CardColor.Red | CardColor.Green),
+                new CharacterCard(7,  "Тинклз", characterCardsPath + "blueCards/characterBlue8.jpg", CardColor.Blue),
                 new CharacterCard(8,  "Бездомная кукла", characterCardsPath + "greenCards/characterGreen1.jpg", CardColor.Green),
                 new CharacterCard(9,  "Мальчик из бассейна", characterCardsPath + "greenCards/characterGreen2.jpg", CardColor.Green),
                 new CharacterCard(10, "Сонный Гэри", characterCardsPath + "greenCards/characterGreen3.jpg", CardColor.Green),
@@ -133,7 +133,7 @@ namespace RickAndMortyLibrary.Common.Game
 
         private static Card GetCharacter(int id)
         {
-            if (id >= allActionCards.Length || id < 0)
+            if (id >= allCharacterCards.Length || id < 0)
                 throw new ArgumentOutOfRangeException();
 
             return allCharacterCards[id];
@@ -141,7 +141,7 @@ namespace RickAndMortyLibrary.Common.Game
 
         private static Card GetPersonality(int id)
         {
-            if (id >= allActionCards.Length || id < 0)
+            if (id >= allPersonalityCards.Length || id < 0)
                 throw new ArgumentOutOfRangeException();
 
             return allPersonalityCards[id];

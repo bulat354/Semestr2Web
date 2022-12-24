@@ -10,6 +10,10 @@
 		<Setter Property="FontFamily">
 			<FontFamily>avares://RickAndMortyUI/Assets/dimbo.ttf#Dimbo Russian</FontFamily>
 		</Setter>
-		<Setter Property="TextDecorations"></Setter>
+	</Style>
+	<Style Selector="Button.dimbo">
+		<Setter Property="FontFamily">
+			<FontFamily>avares://RickAndMortyUI/Assets/dimbo.ttf#Dimbo Russian</FontFamily>
+		</Setter>
 	</Style>
 </Styles>

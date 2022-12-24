@@ -46,5 +46,14 @@ namespace RickAndMortyLibrary
             }
             return i;
         }
+
+        public static void Shuffle<T>(this T[] array)
+        {
+            var random = new Random();
+            for (int i = 0; i < array.Length; i++)
+            {
+                array.Swap(i, random.Next(0, array.Length));
+            }
+        }
     }
 }

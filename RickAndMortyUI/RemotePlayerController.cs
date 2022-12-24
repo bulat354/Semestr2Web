@@ -19,19 +19,13 @@ namespace RickAndMortyUI
             Id = id;
         }
 
-        public async Task<StringMessage?> ProcessMessage(StringMessage message)
+        public StringMessage? ProcessMessage(StringMessage message, bool isRequest = false)
         {
-            await _client.SendMessage(message);
+            _client.SendMessage(message);
 
-            var goals = IsRequest(message);
-            if (goals != null)
-                return await _client.WaitForMessage(goals.Item1, goals.Item2);
+            if (isRequest)
+                return _client.WaitForAny();
 
-            return null;
-        }
-
-        public Tuple<MessageFirstGoal, MessageSecondGoal>? IsRequest(StringMessage message)
-        {
             return null;
         }
     }

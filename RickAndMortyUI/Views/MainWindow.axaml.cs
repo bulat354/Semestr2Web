@@ -21,8 +21,8 @@ using System.Linq;
 using RickAndMortyLibrary;
 using RickAndMortyLibrary.Test;
 using Avalonia.Threading;
-using static RickAndMortyUI.Controls.WaitPanel;
 using System.Reflection;
+using Avalonia.Interactivity;
 
 namespace RickAndMortyUI.Views
 {
@@ -37,39 +37,73 @@ namespace RickAndMortyUI.Views
         private WaitVM waitVM => model.waitGridVM;
         private GameVM gameVM => model.gameGridVM;
 
+        private List<VisualCard> playerCharacters;
+        private List<VisualCard> tableCharacters;
+        private List<VisualCard> playerIcons;
+
+        private List<VisualCard> handCards;
+        private VisualCard? AttachedAction;
+
         public MainWindow()
         {
             InitializeComponent();
 
             DataContextChanged += (s, e) =>
             {
-                model = (MainWindowViewModel)DataContext;
-                menuVM.Appear();
-
-                gameVM.PlayerIconVMs = waitVM.IconVMs;
-                gameVM.CharactersPanel.MainGrid = charactersGrid;
-                gameVM.HandPanel.MainGrid = handGrid;
-
-                character.PointerEnter += gameVM.OnPointerEnter;
-                character.PointerLeave += gameVM.OnPointerLeave;
-                character1.PointerEnter += gameVM.OnPointerEnter;
-                character1.PointerLeave += gameVM.OnPointerLeave;
-                character2.PointerEnter += gameVM.OnPointerEnter;
-                character2.PointerLeave += gameVM.OnPointerLeave;
-                character3.PointerEnter += gameVM.OnPointerEnter;
-                character3.PointerLeave += gameVM.OnPointerLeave;
-                character4.PointerEnter += gameVM.OnPointerEnter;
-                character4.PointerLeave += gameVM.OnPointerLeave;
-                person.PointerEnter += gameVM.OnPointerEnter;
-                person.PointerLeave += gameVM.OnPointerLeave;
+                Init();
             };
 
             assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
 
             menuGrid.IsVisible = true;
 
-            createButton.Click += (s, e) => Task.Run(CreateClicked);
-            joinButton.Click += (s, e) => Task.Run(JoinClicked);
+            createButton.Click += (s, e) => Task.Run(() => CreateClicked(false));
+            advancedButton.Click += (s, e) => Task.Run(() => CreateClicked(true));
+            joinButton.Click += (s, e) => Task.Run(() => JoinClicked());
+        }
+
+        private void Init()
+        {
+            model = (MainWindowViewModel)DataContext;
+            menuVM.Appear();
+            //gameVM.Appear();
+
+            gameVM.PlayerIconVMs = waitVM.IconVMs;
+            gameVM.CharactersPanel.MainGrid = charactersGrid;
+            gameVM.HandPanel.MainGrid = handGrid;
+
+            #region
+            character.PointerEnter += gameVM.OnPointerEnter;
+            character.PointerLeave += gameVM.OnPointerLeave;
+            character1.PointerEnter += gameVM.OnPointerEnter;
+            character1.PointerLeave += gameVM.OnPointerLeave;
+            character2.PointerEnter += gameVM.OnPointerEnter;
+            character2.PointerLeave += gameVM.OnPointerLeave;
+            character3.PointerEnter += gameVM.OnPointerEnter;
+            character3.PointerLeave += gameVM.OnPointerLeave;
+            character4.PointerEnter += gameVM.OnPointerEnter;
+            character4.PointerLeave += gameVM.OnPointerLeave;
+            person.PointerEnter += gameVM.OnPointerEnter;
+            person.PointerLeave += gameVM.OnPointerLeave;
+            #endregion
+
+            playerIcons = new List<VisualCard>()
+            {
+                new VisualCard() { Control = gamePlayer1 },
+                new VisualCard() { Control = gamePlayer2 },
+                new VisualCard(),
+                new VisualCard() { Control = gamePlayer3 },
+                new VisualCard() { Control = gamePlayer4 }
+            };
+
+            playerCharacters = new List<VisualCard>()
+            {
+                new VisualCard() { Control = character1, Vm = gameVM.PlayerCharaterVms[0] },
+                new VisualCard() { Control = character2, Vm = gameVM.PlayerCharaterVms[1] },
+                new VisualCard() { Control = character, Vm = gameVM.PlayerCharaterVms[2] },
+                new VisualCard() { Control = character3, Vm = gameVM.PlayerCharaterVms[3] },
+                new VisualCard() { Control = character4 , Vm = gameVM.PlayerCharaterVms[4] }
+            };
         }
 
         // -----------------------------------------------Server-----------------------------------------------
@@ -80,19 +114,21 @@ namespace RickAndMortyUI.Views
         /// When player click to Create
         /// </summary>
         /// <returns></returns>
-        public async Task CreateClicked()
+
+        public void CreateClicked(bool isAdvanced)
         {
-            //if (!menuVM.ValidateInputs())
-            //    return;
+            if (!menuVM.ValidateInputs())
+                return;
 
             GoToWaitScreen(true);
+            Dispatcher.UIThread.Post(() => Title = "√ï√Æ√±√≤");
 
-            //GetInputs(out var ip, out var port);
-            var ip = "127.0.0.1";
-            var port = 8888;
+            GetInputs(out var ip, out var port);
+            //var ip = "127.0.0.1";
+            //var port = 8888;
             server = new Server(ip, port);
 
-            await CheckForJoinPlayers(2);
+            CheckForJoinPlayers(isAdvanced ? 3 : 2);
 
             GoToGameScreen();
 
@@ -102,53 +138,54 @@ namespace RickAndMortyUI.Views
             game.PlayerControllers = server.Clients
                 .Select(x => (IPlayerController)new RemotePlayerController(x, x.Id))
                 .Append(this).ToArray();
-            game.IsAdvancedMode = true;
+            game.IsAdvancedMode = isAdvanced;
 
-            await game.Start();
+            game.Start();
+
+            Thread.Sleep(3000);
         }
 
         /// <summary>
         /// Waiting for players connecting
         /// </summary>
         /// <param name="minCount">Minimal number of players to start game</param>
-        public async Task CheckForJoinPlayers(int minCount)
+        public void CheckForJoinPlayers(int minCount)
         {
             var ids = GenerateIDs();
             ShowAndBindPlayer(ids[0]);
 
-            for (int i = 1; i < 5; i++)
+            var count = 1;
+            while (true)
             {
-                var client = await server.AwaitJoining(waiting.Token);
-                if (waiting.IsCancellationRequested && i < minCount)
-                {
-                    waiting = new CancellationTokenSource();
-                }
-                else if (waiting.IsCancellationRequested || waitVM.CountingEnded)
-                {
-                    await server.BroadcastMessage(StringMessage.Create(MessageFirstGoal.Player, null, MessageSecondGoal.Stop));
-                }
+                var client = server.AwaitJoining(waiting.Token);
 
                 if (client != null)
                 {
-                    await Task.Delay(500);
+                    Thread.Sleep(500);
 
-                    await server.BroadcastMessage(StringMessage.Create(MessageFirstGoal.Player, ids[i].ToString()));
+                    server.BroadcastMessage(StringMessage.Create(MessageFirstGoal.Player, ids[count].ToString()));
 
                     foreach (var player in waitVM.IconVMs)
                     {
                         if (player.Id >= 0)
-                            await client.SendMessage(StringMessage.Create(MessageFirstGoal.Player, player.Id.ToString()));
+                            client.SendMessage(StringMessage.Create(MessageFirstGoal.Player, player.Id.ToString()));
                     }
 
-                    await client.SendMessage(StringMessage.Create(MessageFirstGoal.Timer, waitVM.Counter));
-                    client.Id = ids[i];
+                    client.SendMessage(StringMessage.Create(MessageFirstGoal.Timer, waitVM.Counter));
+                    client.Id = ids[count];
 
-                    ShowAndBindPlayer(ids[i]);
-                    Task.Run(() => waitVM.ShowText("œË‚ÂÚÒÚ‚ÛÂÏ Ë„ÓÍ‡!", 3000));
+                    ShowAndBindPlayer(ids[count]);
+                    Task.Run(() => waitVM.ShowText("√è√∞√®√¢√•√≤√±√≤√¢√≥√•√¨ √®√£√∞√Æ√™√†!", 3000));
+
+                    count++;
                 }
-                else
+
+                if (waiting.IsCancellationRequested && count < minCount)
+                    waiting = new CancellationTokenSource();
+                else if (waitVM.CountingEnded && count >= minCount)
                 {
-                    return;
+                    server.BroadcastMessage(StringMessage.Create(MessageFirstGoal.Player, null, MessageSecondGoal.Stop));
+                    break;
                 }
             }
         }
@@ -178,40 +215,44 @@ namespace RickAndMortyUI.Views
         /// <summary>
         /// When player click to Join
         /// </summary>
-        public async Task JoinClicked()
+        public void JoinClicked()
         {
-            //if (!menuVM.ValidateInputs())
-            //    return;
+            if (!menuVM.ValidateInputs())
+                return;
 
             try
             {
-                //GetInputs(out var ip, out var port);
-                var ip = "127.0.0.1";
-                var port = 8888;
+                GetInputs(out var ip, out var port);
+                //var ip = "127.0.0.1";
+                //var port = 8888;
                 client = new Client(ip, port);
             }
             catch
             {
-                menuVM.ErrorText = "Œ¯Ë·Í‡ ÔÓ‰ÍÎ˛˜ÂÌËˇ";
+                menuVM.ErrorText = "√é√∏√®√°√™√† √Ø√Æ√§√™√´√æ√∑√•√≠√®√ø";
                 return;
             }
 
             GoToWaitScreen(false);
-            await CheckForNewPlayers();
+            Dispatcher.UIThread.Post(() => Title = "√ä√´√®√•√≠√≤");
+            CheckForNewPlayers();
             waiting.Cancel();
 
             GoToGameScreen();
-            await StartReceiveMessages();
+            StartReceiveMessages();
+
+            Thread.Sleep(3000);
+            GoToMainScreen();
         }
 
         /// <summary>
         /// Wait for new players and add them to wait screen 
         /// </summary>
-        public async Task CheckForNewPlayers()
+        public void CheckForNewPlayers()
         {
             for (int i = 0; i < 5; i++)
             {
-                var msg = await client.WaitForMessage(MessageFirstGoal.Player | MessageFirstGoal.Timer, MessageSecondGoal.None | MessageSecondGoal.Stop);
+                var msg = client.WaitForMessage(MessageFirstGoal.Player | MessageFirstGoal.Timer, MessageSecondGoal.None | MessageSecondGoal.Stop);
 
                 if (msg == null)
                 {
@@ -229,21 +270,25 @@ namespace RickAndMortyUI.Views
 
                 ShowAndBindPlayer(msg.ToInt());
 
-                Task.Run(() => waitVM.ShowText("ÕÓ‚˚È Ë„ÓÍ!", 3000));
+                Task.Run(() => waitVM.ShowText("√ç√Æ√¢√ª√© √®√£√∞√Æ√™!", 3000));
             }
         }
 
         /// <summary>
         /// Wait for messages from server and process them
         /// </summary>
-        public async Task StartReceiveMessages()
+        public void StartReceiveMessages()
         {
             while (true)
             {
-                var message = await client.WaitForAny();
-                var response = await ProcessMessage(message);
-                if (response != null)
-                    await client.SendMessage(response);
+                var message = client.WaitForAny();
+
+                if (message != null)
+                {
+                    var response = ProcessMessage(message, true);
+                    if (response != null)
+                        client.SendMessage(response);
+                }
             }
         }
         #endregion
@@ -284,7 +329,7 @@ namespace RickAndMortyUI.Views
             waiting = new CancellationTokenSource();
 
             if (toStartTimer)
-                Task.Run(() => wait.StartCounting(10, waiting));
+                Task.Run(() => wait.StartCounting(30, waiting));
             Task.Run(() => wait.StartAnimation(waiting.Token));
         }
 
@@ -293,10 +338,20 @@ namespace RickAndMortyUI.Views
         /// </summary>
         public void GoToGameScreen()
         {
+            tableCharacters = new List<VisualCard>();
+            handCards = new List<VisualCard>();
+
             waitVM.Disappear();
 
             gameVM.Reset();
             gameVM.Appear();
+            PropertyChanged += OnWidthChanged;
+        }
+
+        public void OnWidthChanged(object? s, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property.Name == "Width")
+                gameVM.CharactersPanel.OnWidthChanged();
         }
 
         /// <summary>
@@ -304,10 +359,13 @@ namespace RickAndMortyUI.Views
         /// </summary>
         public void GoToMainScreen()
         {
+            PropertyChanged -= OnWidthChanged;
             gameVM.Disappear();
 
             menuVM.Reset();
             menuVM.Appear();
+
+            Dispatcher.UIThread.Post(() => Title = "–ì–ª–∞–≤–Ω–æ–µ –º–µ–Ω—é");
         }
 
         /// <summary>
@@ -324,154 +382,311 @@ namespace RickAndMortyUI.Views
                 wait.IconVMs[index].Id = id;
                 wait.IconVMs[index].Source = image;
                 wait.IconVMs[index].IsVisible = true;
+
+                playerCharacters[index].PlayerId = id;
+                playerIcons[index].PlayerId = id;
             }
         }
 
         public int Id => waitVM.IconVMs[2].Id;
 
-        private Dictionary<int, Control> characterControls = new Dictionary<int, Control>();
-        private List<Tuple<int, Control>> handControls = new List<Tuple<int, Control>>();
-
         /// <summary>
         /// Process message from server and send response if necessary
         /// </summary>
-        public async Task<StringMessage?> ProcessMessage(StringMessage message)
+        public StringMessage? ProcessMessage(StringMessage message, bool isRequest = false)
         {
             switch (message.FirstGoal)
             {
+                case (MessageFirstGoal.Player):
+                    return ProcessPlayer();
                 case (MessageFirstGoal.Character):
-                    return await ProcessCharacter(message);
+                    return ProcessCharacter(message);
                 case (MessageFirstGoal.Action):
-                    return await ProcessAction(message);
+                    return ProcessAction(message);
                 case (MessageFirstGoal.Person):
-                    return await ProcessPerson(message);
+                    ProcessPerson(message); break;
                 case (MessageFirstGoal.Message):
-                    Task.Run(() => gameVM.ShowText(message.Message,
-                        message.SecondGoal == MessageSecondGoal.ForTime ? 3000 : -1));
-                    break;
+                    ProcessMessage(message); break;
+                case (MessageFirstGoal.Voting):
+                    return ProcessVoting(message);
             }
 
             return null;
         }
 
-        public async Task<StringMessage?> ProcessCharacter(StringMessage message)
+        public StringMessage? ProcessPlayer()
+        {
+            var src = new TaskCompletionSource<int>();
+            foreach (var item in playerIcons.Where(x => x.Control != null))
+            {
+                var icon = item;
+                icon.MakeClickable();
+                icon.Control.PointerPressed += (s, e) =>
+                {
+                    src.TrySetResult(icon.PlayerId);
+                };
+            }
+            src.Task.Wait();
+            playerIcons.Where(x => x.Control != null).ForEach(x => x.MakeUnclickable());
+
+            return new StringMessage(MessageFirstGoal.Player, src.Task.Result.ToString());
+        }
+
+        public void ProcessMessage(StringMessage message)
+        {
+            var text = message.Message.Substring(0, Math.Min(45, message.Message.Length)) 
+                + (message.Message.Length > 45 ? "..." : "");
+            Task.Run(() => gameVM.ShowText(message.Message, message.SecondGoal == MessageSecondGoal.ForTime ? 3000 : -1));
+        }
+
+        public StringMessage? ProcessVoting(StringMessage message)
+        {
+            var src = new TaskCompletionSource<bool>();
+
+            EventHandler<RoutedEventArgs> agree = (s, e) => src.SetResult(true);
+            EventHandler<RoutedEventArgs> disagree = (s, e) => src.SetResult(false);
+
+            agreeButton.Click += agree;
+            disagreeButton.Click += disagree;
+
+            gameVM.ShowVoting();
+
+            src.Task.Wait();
+
+            gameVM.HideVoting();
+
+            agreeButton.Click -= agree;
+            disagreeButton.Click -= disagree;
+
+            return StringMessage.Create(MessageFirstGoal.None, src.Task.Result ? "yes" : "no");
+        }
+
+        public StringMessage? ProcessCharacter(StringMessage message)
         {
             switch (message.SecondGoal)
             {
-                case (MessageSecondGoal.Add):
-                    await ProcessCharacterAdd(message);
-                    break;
-                case (MessageSecondGoal.Remove):
-                    await ProcessCharacterRemove(message);
-                    break;
-                case (MessageSecondGoal.Attach):
-                    await ProcessCharacterAttach(message);
-                    break;
-                case (MessageSecondGoal.Detach):
-                    await ProcessCharacterDetach(message);
-                    break;
+                case MessageSecondGoal.Add:
+                    ProcessCharacterAdd(message); break;
+                case MessageSecondGoal.Remove:
+                    ProcessCharacterRemove(message); break;
+                case MessageSecondGoal.Attach:
+                    ProcessCharacterAttach(message); break;
+                case MessageSecondGoal.Detach:
+                    ProcessCharacterDetach(message); break;
+                case MessageSecondGoal.None:
+                    return ProcessCharacterSelect(message);
             }
 
             return null;
         }
 
-        private async Task ProcessCharacterAdd(StringMessage message)
+        private StringMessage? ProcessCharacterSelect(StringMessage message)
         {
-            var card = CardsImporter.GetCard<CharacterCard>(message.ToInt());
+            var ids = message.Message.Split(' ').Select(x => int.Parse(x)).ToArray();
+            var cards = tableCharacters
+                .Concat(playerCharacters)
+                .Where(x => ids.Contains(x.Id))
+                .ToArray();
+            if (!cards.Any())
+                return null;
+
+            var src = new TaskCompletionSource<VisualCard>();
+            foreach (var item in cards)
+            {
+                var card = item;
+                card.MakeClickable();
+                card.Control.PointerPressed += (s, e) =>
+                {
+                    src.TrySetResult(card);
+                };
+            }
+
+            src.Task.Wait();
+            foreach (var card in cards)
+                card.MakeUnclickable();
+            return new StringMessage(MessageFirstGoal.Character, src.Task.Result.Id.ToString());
+        }
+
+        private void ProcessCharacterDetach(StringMessage message)
+        {
+            var playerId = message.ToInt();
+
+            var visual = playerCharacters.FirstOrDefault(x => x.PlayerId == playerId);
+            visual.Id = -1;
+            visual.Vm.Hide();
+            visual.Vm.Source = null;
+        }
+
+        private void ProcessCharacterAttach(StringMessage message)
+        {
+            var split = message.Message.Split(' ').Select(x => int.Parse(x)).ToArray();
+            
+            var cardId = split[0];
+            var card = CardsImporter.GetCard<CharacterCard>(cardId);
             var image = GetImage(card.ImagePath);
-            var control = await gameVM.CharactersPanel.AddCharacter(image);
-            characterControls.Add(card.Id, control);
+            var playerId = split[1];
+
+            var visual = playerCharacters.First(x => x.PlayerId == playerId);
+            visual.Id = cardId;
+            visual.Vm.Bind(image);
+            visual.Vm.Show();
         }
 
-        private async Task ProcessCharacterRemove(StringMessage message)
+        private void ProcessCharacterRemove(StringMessage message)
         {
-            var id = message.ToInt();
-            var control = characterControls[id];
-            gameVM.CharactersPanel.RemoveCharacter(control);
-            characterControls.Remove(id);
+            var cardId = message.ToInt();
+            var visual = tableCharacters.FirstOrDefault(x => x.Id == cardId);
+            tableCharacters.Remove(visual);
+
+            gameVM.CharactersPanel.RemoveCharacter(visual.Control);
         }
 
-        private async Task ProcessCharacterAttach(StringMessage message)
+        private void ProcessCharacterAdd(StringMessage message)
         {
-            var split = message.Message.Split();
-            var cardId = int.Parse(split[0]);
-            var playerId = int.Parse(split[1]);
-            var index = gameVM.PlayerIconVMs.FirstIndex(x => x.Id == playerId);
+            var cardId = message.ToInt();
             var card = CardsImporter.GetCard<CharacterCard>(cardId);
             var image = GetImage(card.ImagePath);
 
-            gameVM.PlayerCharaterVms[index].CardId = cardId;
-            gameVM.PlayerCharaterVms[index].Bind(image);
-            gameVM.PlayerCharaterVms[index].Show();
+            var vm = new CharacterVM() { CardId = cardId, IsVisible = true, Source = image };
+            var control = gameVM.CharactersPanel.AddCharacter(vm);
+            tableCharacters.Add(new VisualCard() { Control = control, Id = cardId, Vm = vm });
         }
 
-        private async Task ProcessCharacterDetach(StringMessage message)
-        {
-            var index = gameVM.PlayerIconVMs.FirstIndex(x => x.Id == message.ToInt());
-            gameVM.PlayerCharaterVms[index].Hide();
-        }
-
-        public async Task<StringMessage?> ProcessAction(StringMessage message)
+        public StringMessage? ProcessAction(StringMessage message)
         {
             switch (message.SecondGoal)
             {
-                case (MessageSecondGoal.Add):
-                    await ProcessActionAdd(message);
-                    break;
-                case (MessageSecondGoal.Remove):
-                    await ProcessActionRemove(message);
-                    break;
+                case MessageSecondGoal.Add:
+                    ProcessActionAdd(message); break;
+                case MessageSecondGoal.Attach:
+                    ProcessActionAttach(message); break;
+                case MessageSecondGoal.Remove:
+                    ProcessActionRemove(message); break;
+                case MessageSecondGoal.None:
+                    return ProcessActionSelect(message);
             }
 
             return null;
         }
 
-        private async Task ProcessActionAdd(StringMessage message)
+        private void ProcessActionAttach(StringMessage message)
         {
-            var id = message.ToInt();
-            var card = CardsImporter.GetCard<ActionCard>(id);
+            var cardId = message.ToInt();
+
+            AttachedAction = new VisualCard() { Id = cardId };
+        }
+
+        private StringMessage? ProcessActionSelect(StringMessage message)
+        {
+            if (AttachedAction != null)
+            {
+                var msg = new StringMessage(MessageFirstGoal.Action, AttachedAction.Id.ToString());
+                AttachedAction = null;
+                return msg;
+            }
+
+            if (handCards.Count == 0)
+                return null;
+
+            var src = new TaskCompletionSource<VisualCard>();
+            foreach (var item in handCards)
+            {
+                var card = item;
+                card.MakeClickable();
+                card.Control.PointerPressed += (s, e) =>
+                {
+                    src.TrySetResult(card);
+                };
+            }
+
+            src.Task.Wait();
+            foreach (var card in handCards)
+                card.MakeUnclickable();
+
+            handCards.Remove(src.Task.Result);
+            gameVM.HandPanel.RemoveAction(src.Task.Result.Control);
+            return new StringMessage(MessageFirstGoal.Character, src.Task.Result.Id.ToString());
+        }
+
+        private void ProcessActionRemove(StringMessage message)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ProcessActionAdd(StringMessage message)
+        {
+            var cardId = message.ToInt();
+            var card = CardsImporter.GetCard<ActionCard>(cardId);
             var image = GetImage(card.ImagePath);
-            var control = await gameVM.HandPanel.AddAction(image);
-            handControls.Add(Tuple.Create(id, control));
+
+            var vm = new CharacterVM() { CardId = cardId, IsVisible = true, Source = image };
+            var control = gameVM.HandPanel.AddAction(vm);
+            handCards.Add(new VisualCard() { Control = control, Id = cardId, Vm = vm });
         }
 
-        private async Task ProcessActionRemove(StringMessage message)
-        {
-            var id = message.ToInt();
-            var tuple = handControls.First(x => x.Item1 == id);
-            gameVM.HandPanel.RemoveAction(tuple.Item2);
-            handControls.Remove(tuple);
-        }
-
-        public async Task<StringMessage?> ProcessPerson(StringMessage message)
+        public StringMessage? ProcessPerson(StringMessage message)
         {
             switch (message.SecondGoal)
             {
-                case (MessageSecondGoal.Attach):
-                    await ProcessPersonAttach(message);
-                    break;
-                case (MessageSecondGoal.Detach):
-                    await ProcessPersonDetach(message);
-                    break;
+                case MessageSecondGoal.Attach:
+                    ProcessPersonAttach(message); break;
+                case MessageSecondGoal.Detach:
+                    ProcessPersonDetach(message); break;
+                case MessageSecondGoal.Add:
+                    ProcessPersonShow(message); break;
             }
 
             return null;
         }
 
-        private async Task ProcessPersonAttach(StringMessage message)
+        private void ProcessPersonShow(StringMessage message)
         {
-            var id = message.ToInt();
+            var split = message.Message.Split(' ').Select(x => int.Parse(x)).ToArray();
+            var cardId = split[0];
+            var persId = split[1];
+            var card = CardsImporter.GetCard<PersonalityCard>(persId);
+            var image = GetImage(card.ImagePath);
+
+            var visual = tableCharacters.Concat(playerCharacters)
+                .FirstOrDefault(x => x.Id == cardId);
+
+            Task.Run(() =>
+            {
+                var oldImage = visual.Vm.Source;
+                visual.Vm.Bind(image);
+                visual.Vm.Show();
+                Thread.Sleep(3000);
+                if (visual != null)
+                    visual.Vm.Bind(oldImage);
+            });
+        }
+
+        private void ProcessPersonDetach(StringMessage message)
+        {
+            gameVM.PersonVM.Hide();
+            gameVM.PersonVM.Source = null;
+        }
+
+        public void ProcessPersonAttach(StringMessage message)
+        {
+            var split = message.Message.Split(' ').Select(x => int.Parse(x)).ToArray();
+            var id = split[0];
             var card = CardsImporter.GetCard<PersonalityCard>(id);
             var image = GetImage(card.ImagePath);
 
-            gameVM.PersonVM.CardId = id;
-            gameVM.PersonVM.Bind(image);
-            gameVM.PersonVM.Show();
-        }
+            if (split.Length == 1)
+            {
+                gameVM.PersonVM.Bind(image);
+                gameVM.PersonVM.Show();
+            }
+            else
+            {
+                var playerId = split[1];
 
-        private async Task ProcessPersonDetach(StringMessage message)
-        {
-            gameVM.PersonVM.Hide();
+                var visual = playerCharacters.FirstOrDefault(x => x.PlayerId == playerId);
+                visual.Vm.Bind(image);
+                visual.Vm.Show();
+            }
         }
         #endregion
     }

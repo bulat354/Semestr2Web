@@ -47,6 +47,12 @@ namespace RickAndMortyUI.ViewModels
             get => _overlaySource;
             set => this.RaiseAndSetIfChanged(ref _overlaySource, value);
         }
+        private bool _voteVisible;
+        public bool VoteVisible
+        {
+            get => _voteVisible;
+            set => this.RaiseAndSetIfChanged(ref _voteVisible, value);
+        }
 
         public override void Reset()
         {
@@ -56,9 +62,18 @@ namespace RickAndMortyUI.ViewModels
 
         public void OnPointerEnter(object? sender, PointerEventArgs args)
         {
-            if (sender is Control control)
+            if (sender is Image image)
             {
-                if (control.DataContext is CharacterVM vm)
+                if (image.IsVisible)
+                {
+                    OverlaySource = image.Source;
+                    OverlayVisible = true;
+                }
+            }
+
+            else if (sender is Border border)
+            {
+                if (border.DataContext is CharacterVM vm)
                 {
                     if (vm != null && vm.IsVisible)
                     {
@@ -77,7 +92,7 @@ namespace RickAndMortyUI.ViewModels
                 {
                     if (vm != null && vm.IsVisible)
                     {
-                        OverlayVisible = false;
+                        OverlayVisible = false | VoteVisible;
                     }
                 }
             }
@@ -95,6 +110,19 @@ namespace RickAndMortyUI.ViewModels
                 if (GameText == text)
                     GameText = oldText;
             }
+        }
+        
+        public void ShowVoting()
+        {
+            OverlaySource = null;
+            VoteVisible = true;
+            OverlayVisible = true;
+        }
+
+        public void HideVoting()
+        {
+            OverlayVisible = false;
+            VoteVisible = false;
         }
     }
 }

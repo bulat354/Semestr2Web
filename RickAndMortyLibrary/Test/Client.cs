@@ -28,7 +28,7 @@ namespace RickAndMortyLibrary.Test
 
         private List<StringMessage> _readyMessages = new List<StringMessage>();
 
-        public async Task<StringMessage?> WaitForMessage(MessageFirstGoal firstGoal, MessageSecondGoal secondGoal)
+        public StringMessage? WaitForMessage(MessageFirstGoal firstGoal, MessageSecondGoal secondGoal)
         {
             lock (_readyMessages)
             {
@@ -46,7 +46,7 @@ namespace RickAndMortyLibrary.Test
             {
                 while (true)
                 {
-                    var packet = await _client.ReceivePacket();
+                    var packet = _client.ReceivePacket();
                     if (packet != null)
                     {
                         var msg = StringMessage.Parse(packet);
@@ -67,7 +67,7 @@ namespace RickAndMortyLibrary.Test
             }
         }
 
-        public async Task<StringMessage?> WaitForAny()
+        public StringMessage? WaitForAny()
         {
             lock (_readyMessages)
             {
@@ -83,7 +83,7 @@ namespace RickAndMortyLibrary.Test
             {
                 while (true)
                 {
-                    var packet = await _client.ReceivePacket();
+                    var packet = _client.ReceivePacket();
                     if (packet != null)
                     {
                         var msg = StringMessage.Parse(packet);
@@ -100,12 +100,12 @@ namespace RickAndMortyLibrary.Test
             }
         }
 
-        public async Task SendMessage(StringMessage message)
+        public void SendMessage(StringMessage message)
         {
             try
             {
                 var packet = message.ToPacket();
-                await _client.SendPacket(packet);
+                _client.SendPacket(packet);
             }
             catch { return; }
         }

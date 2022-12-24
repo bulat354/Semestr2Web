@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using ReactiveUI;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.Data;
+using Avalonia;
 
 namespace RickAndMortyUI.ViewModels
 {
@@ -21,9 +23,9 @@ namespace RickAndMortyUI.ViewModels
         };
         public int RowsCount = 1;
 
-        public async Task<Control> AddCharacter(IImage source)
+        public Control AddCharacter(CharacterVM vm)
         {
-            var control = await GetCharacterControl(source);
+            var control = GetCharacterControl(vm);
 
             if (EmptyPlaces.Count == 0)
             {
@@ -42,9 +44,9 @@ namespace RickAndMortyUI.ViewModels
             return control;
         }
 
-        public async void RemoveCharacter(Control control)
+        public void RemoveCharacter(Control control)
         {
-            await Dispatcher.UIThread.InvokeAsync(() =>
+            Dispatcher.UIThread.Post(() =>
             {
                 MainGrid.Children.Remove(control);
                 var row = control.GetValue(Grid.RowProperty);
@@ -55,13 +57,13 @@ namespace RickAndMortyUI.ViewModels
             });
         }
 
-        public async Task<Control> GetCharacterControl(IImage source)
+        public Control GetCharacterControl(CharacterVM vm)
         {
             /*
 							<Border Grid.Column="0" Grid.Row="0" CornerRadius="7" ClipToBounds="True" Margin="20" VerticalAlignment="Top">
 								<Image Source="/Assets/test.jpg"/>
 							</Border>*/
-            return await Dispatcher.UIThread.InvokeAsync(() =>
+            var task = Dispatcher.UIThread.InvokeAsync(() =>
             {
                 var border = new Border();
                 border.ClipToBounds = true;
@@ -69,22 +71,18 @@ namespace RickAndMortyUI.ViewModels
                 border.Margin = new Avalonia.Thickness(20);
                 border.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top;
                 border.BoxShadow = new BoxShadows(BoxShadow.Parse("3 3 10 4 #40000000"));
-                border.PointerEnter += (s, e) =>
-                {
-                    GameVM.OverlayVisible = true;
-                    GameVM.OverlaySource = source;
-                };
-                border.PointerLeave += (s, e) =>
-                {
-                    GameVM.OverlayVisible = false;
-                };
+                border.DataContext = vm;
 
                 var image = new Image();
-                image.Source = source;
+                image.Bind(Image.SourceProperty, new Binding("Source"));
+                image.PointerEnter += GameVM.OnPointerEnter;
+                image.PointerLeave += GameVM.OnPointerLeave;
 
                 border.Child = image;
                 return border;
             });
+            task.Wait();
+            return task.Result;
         }
 
         public void OnWidthChanged()

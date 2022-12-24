@@ -9,13 +9,14 @@ namespace RickAndMortyLibrary.Test
     [Flags]
     public enum MessageFirstGoal
     {
-        None = 1, 
-        Player = 2, 
-        Timer = 4,
-        Character = 8,
-        Action = 16,
-        Person = 32,
-        Message = 64,
+        None = 0, 
+        Player = 1, 
+        Timer = 2,
+        Character = 4,
+        Action = 8,
+        Person = 16,
+        Message = 32,
+        Voting = 64,
 
         Any = None | Player | Timer | Character | Action
     }
@@ -23,13 +24,13 @@ namespace RickAndMortyLibrary.Test
     [Flags]
     public enum MessageSecondGoal
     {
-        None = 1, 
-        Stop = 2,
-        Add = 4,
-        Remove = 8,
-        Attach = 16,
-        Detach = 32,
-        ForTime = 64,
+        None = 0, 
+        Stop = 1,
+        Add = 2,
+        Remove = 4,
+        Attach = 8,
+        Detach = 16,
+        ForTime = 32,
 
         Any = None | Stop | Add | Remove | Attach | Detach
     }

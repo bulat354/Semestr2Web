@@ -54,16 +54,16 @@ namespace RickAndMortyUI.ViewModels
             IconVMs[index].Bind(image);
         }
 
-        public async Task StartCounting(int count, CancellationTokenSource src)
+        public void StartCounting(int count, CancellationTokenSource src)
         {
             var i = count;
             Counter = i.ToString();
 
-            while (i > 0)
+            while (i > 0 && !src.IsCancellationRequested)
             {
                 try
                 {
-                    await Task.Delay(1000, src.Token);
+                    Thread.Sleep(1000);
                 }
                 catch
                 {
@@ -78,14 +78,14 @@ namespace RickAndMortyUI.ViewModels
             src.Cancel();
         }
 
-        public async Task StartAnimation(CancellationToken token)
+        public void StartAnimation(CancellationToken token)
         {
             var i = 0;
             while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    await Task.Delay(800, token);
+                    Thread.Sleep(800);
                 }
                 catch
                 {
@@ -101,11 +101,11 @@ namespace RickAndMortyUI.ViewModels
             WaitText = "Игра начинается!";
         }
 
-        public async Task ShowText(string text, int time)
+        public void ShowText(string text, int time)
         {
             ableToSetText = false;
             WaitText = text;
-            await Task.Delay(time);
+            Thread.Sleep(500);
             ableToSetText = true;
         }
 

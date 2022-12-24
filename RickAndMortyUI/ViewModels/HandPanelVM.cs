@@ -1,4 +1,6 @@
-﻿using Avalonia.Controls;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Threading;
 using System;
@@ -16,11 +18,11 @@ namespace RickAndMortyUI.ViewModels
 
         public int ColumnsCount { get; set; }
 
-        public async Task<Control> AddAction(IImage source)
+        public Control AddAction(CharacterVM vm)
         {
             ColumnsCount++;
 
-            var control = await GetActionControl(source);
+            var control = GetActionControl(vm);
             MainGrid.AddChild(control, ColumnsCount, 0, 2);
             OnWidthChanged();
 
@@ -39,13 +41,13 @@ namespace RickAndMortyUI.ViewModels
             });
         }
 
-        public async Task<Control> GetActionControl(IImage source)
+        public Control GetActionControl(CharacterVM vm)
         {
             /*
 						<Border Grid.Column="1" CornerRadius="2" Grid.ColumnSpan="10" HorizontalAlignment="Left" ClipToBounds="True">
 							<Image Source="/Assets/test1.jpg" VerticalAlignment="Top"/>
 						</Border>*/
-            return await Dispatcher.UIThread.InvokeAsync(() =>
+            var task = Dispatcher.UIThread.InvokeAsync(() =>
             {
                 var border = new Border();
                 border.ClipToBounds = true;
@@ -53,22 +55,18 @@ namespace RickAndMortyUI.ViewModels
                 border.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
                 border.BorderBrush = new SolidColorBrush(Color.Parse("#000000"), 0.2);
                 border.BorderThickness = new Avalonia.Thickness(1, 0, 0, 0);
-                border.PointerEnter += (s, e) =>
-                {
-                    GameVM.OverlayVisible = true;
-                    GameVM.OverlaySource = source;
-                };
-                border.PointerLeave += (s, e) =>
-                {
-                    GameVM.OverlayVisible = false;
-                };
+                border.DataContext = vm;
 
                 var image = new Image();
-                image.Source = source;
+                image.Bind(Image.SourceProperty, new Binding("Source"));
+                image.PointerEnter += GameVM.OnPointerEnter;
+                image.PointerLeave += GameVM.OnPointerLeave;
 
                 border.Child = image;
                 return border;
             });
+            task.Wait();
+            return task.Result;
         }
 
         public void OnWidthChanged()

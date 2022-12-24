@@ -1,7 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:RickAndMortyUI.ViewModels"
-		xmlns:controls="using:RickAndMortyUI.Controls"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1536" d:DesignHeight="864"
@@ -15,11 +14,6 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 	<Window.Styles>
-		<StyleInclude Source="/Controls/MainPanel.axaml"></StyleInclude>
-		<StyleInclude Source="/Controls/WaitPanel.axaml"></StyleInclude>
-		<StyleInclude Source="/Controls/GameScreen.axaml"></StyleInclude>
-		<StyleInclude Source="/Controls/CardCollection.axaml"></StyleInclude>
-		<StyleInclude Source="/Controls/CardControl.axaml"></StyleInclude>
 		<StyleInclude Source="/Styles/ButtonStyles.axaml"/>
 		<StyleInclude Source="/Styles/TextBoxStyles.axaml"/>
 		<StyleInclude Source="/Styles/TextStyles.axaml"/>
@@ -35,7 +29,12 @@
 			<Setter Property="Background" Value="White"/>
 		</Style>
 		<Style Selector="Border.clickable:pointerover Image">
-			<Setter Property="Opacity" Value="0.75"/>
+			<Setter Property="Opacity" Value="0.5"/>
+			<Setter Property="RenderTransform" Value="scale(1.2)"/>
+		</Style>
+		<Style Selector="Image.clickable:pointerover">
+			<Setter Property="Opacity" Value="0.5"/>
+			<Setter Property="RenderTransform" Value="scale(1.2)"/>
 		</Style>
 	</Window.Styles>
 	
@@ -46,7 +45,8 @@
 	<Grid Name="mainGrid">
 		<Grid DataContext="{Binding gameGridVM}">
 			<Grid Name="gameGrid" ShowGridLines="False" ColumnDefinitions="0.2* * 2.6* * 0.2*" RowDefinitions="* 2* 2* *" IsVisible="{Binding Visible}" Opacity="{Binding Opacity}">
-				<TextBlock Name="gameText" Grid.Column="2" Classes="dimbo" FontSize="100" Foreground="#f0f0f0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding GameText}"></TextBlock>
+				<TextBlock Name="gameText" Grid.Column="0" Grid.ColumnSpan="5" Classes="dimbo" FontSize="60" Foreground="#f0f0f0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding GameText}" ClipToBounds="True" TextTrimming="CharacterEllipsis"></TextBlock>
+
 
 				<Border Grid.Column="2" Grid.Row="1" Grid.RowSpan="2" Background="#4d000000" Padding="50" BorderBrush="#4d000000">
 					<ScrollViewer AllowAutoHide="True" DataContext="{Binding CharactersPanel}">
@@ -60,39 +60,44 @@
 					</ScrollViewer>
 				</Border>
 
-				<Border Name="character1" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" CornerRadius="5" ClipToBounds="True" Margin="30" VerticalAlignment="Top" HorizontalAlignment="Left" DataContext="{Binding PlayerCharaterVms[0]}">
-					<Image Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+				<Border Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" CornerRadius="5" ClipToBounds="True" Margin="30" VerticalAlignment="Top" HorizontalAlignment="Left" DataContext="{Binding PlayerCharaterVms[0]}">
+					<Image Name="character1" Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+
 				</Border>
 				<Border Grid.Row="1" DataContext="{Binding PlayerIconVMs[0]}">
 					<Image Name="gamePlayer1" Source="{Binding Source}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Left" VerticalAlignment="Top"></Image>
 				</Border>
 
-				<Border Name="character2" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" CornerRadius="5" ClipToBounds="True" Margin="30" VerticalAlignment="Top" HorizontalAlignment="Left" DataContext="{Binding PlayerCharaterVms[1]}">
-					<Image Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+				<Border Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" CornerRadius="5" ClipToBounds="True" Margin="30" VerticalAlignment="Top" HorizontalAlignment="Left" DataContext="{Binding PlayerCharaterVms[1]}">
+					<Image Name="character2" Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+
 				</Border>
 				<Border Grid.Row="2" DataContext="{Binding PlayerIconVMs[1]}">
 					<Image Name="gamePlayer2" Source="{Binding Source}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Left" VerticalAlignment="Top"></Image>
 				</Border>
 
-				<Border Name="character3" Grid.Column="3" Grid.Row="1" Grid.ColumnSpan="2" CornerRadius="5" ClipToBounds="True" Margin="30" VerticalAlignment="Top" HorizontalAlignment="Right" DataContext="{Binding PlayerCharaterVms[3]}">
-					<Image Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+				<Border Grid.Column="3" Grid.Row="1" Grid.ColumnSpan="2" CornerRadius="5" ClipToBounds="True" Margin="30" VerticalAlignment="Top" HorizontalAlignment="Right" DataContext="{Binding PlayerCharaterVms[3]}">
+					<Image Name="character3" Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+
 				</Border>
 				<Border Grid.Row="1" Grid.Column="4" DataContext="{Binding PlayerIconVMs[3]}">
 					<Image Name="gamePlayer3" Source="{Binding Source}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Right" VerticalAlignment="Top"></Image>
 				</Border>
 
-				<Border Name="character4" Grid.Column="3" Grid.Row="2" Grid.ColumnSpan="2" CornerRadius="5" ClipToBounds="True" Margin="30" VerticalAlignment="Top" HorizontalAlignment="Right" DataContext="{Binding PlayerCharaterVms[4]}">
-					<Image Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+				<Border Grid.Column="3" Grid.Row="2" Grid.ColumnSpan="2" CornerRadius="5" ClipToBounds="True" Margin="30" VerticalAlignment="Top" HorizontalAlignment="Right" DataContext="{Binding PlayerCharaterVms[4]}">
+					<Image Name="character4" Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+
 				</Border>
 				<Border Grid.Row="2" Grid.Column="4" DataContext="{Binding PlayerIconVMs[4]}">
 					<Image Name="gamePlayer4" Source="{Binding Source}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Right" VerticalAlignment="Top"></Image>
 				</Border>
 
-				<Border Name="character" Grid.Column="1" Grid.Row="4" CornerRadius="2" ClipToBounds="True" DataContext="{Binding PlayerCharaterVms[2]}">
-					<Image Source="{Binding Source}" IsVisible="{Binding IsVisible}" VerticalAlignment="Top"/>
+				<Border Grid.Column="1" Grid.Row="4" CornerRadius="2" ClipToBounds="True" DataContext="{Binding PlayerCharaterVms[2]}">
+					<Image Name="character" Source="{Binding Source}" IsVisible="{Binding IsVisible}" VerticalAlignment="Top"/>
 				</Border>
-				<Border Name="person" Grid.Column="3" Grid.Row="4" CornerRadius="2" ClipToBounds="True" DataContext="{Binding PersonVM}">
-					<Image Source="{Binding Source}" IsVisible="{Binding IsVisible}" VerticalAlignment="Top"/>
+				<Border Grid.Column="3" Grid.Row="4" CornerRadius="2" ClipToBounds="True" DataContext="{Binding PersonVM}">
+					<Image Name="person" Source="{Binding Source}" IsVisible="{Binding IsVisible}" VerticalAlignment="Top"/>
+
 				</Border>
 
 				<Border Grid.Column="2" Grid.Row="4" DataContext="{Binding HandPanel}">
@@ -105,8 +110,18 @@
 					</Grid>
 				</Border>
 
-				<Grid Name="gameOverlayGrid" ShowGridLines="False" Grid.ColumnSpan="5" Grid.RowSpan="4" Background="#4d000000" ColumnDefinitions="* * *" RowDefinitions="* 3* *" IsHitTestVisible="False" IsVisible="{Binding OverlayVisible}">
-					<Image Source="{Binding OverlaySource}" Grid.Column="1" Grid.Row="1" IsHitTestVisible="False" Stretch="None"></Image>
+				<Grid Name="gameOverlayGrid" ShowGridLines="False" Grid.ColumnSpan="5" Grid.RowSpan="4" Background="#4d000000" ColumnDefinitions="* 2* *" RowDefinitions="* 3* *" IsHitTestVisible="{Binding VoteVisible}" IsVisible="{Binding OverlayVisible}">
+					<Image Source="{Binding OverlaySource}" Opacity="0.8" Grid.Column="1" Grid.Row="1" IsHitTestVisible="False" Stretch="None"/>
+					<Grid Grid.Column="1" Grid.Row="1" ShowGridLines="False" RowDefinitions="3* * *" IsVisible="{Binding VoteVisible}" Background="#a5000000">
+						<TextBlock Classes="dimbo" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextAlignment="Center" FontSize="80" TextWrapping="Wrap" Foreground="#f0f0f0">На столе остались паразиты?</TextBlock>
+						<Button Name="agreeButton" Classes="dimbo" Grid.Row="1" FontSize="40" HorizontalAlignment="Center">
+							<TextBlock>Нет, мы всех перебили!</TextBlock>
+						</Button>
+						<Button Name="disagreeButton" Classes="dimbo" Grid.Row="2" FontSize="40" HorizontalAlignment="Center">
+							<TextBlock>Да</TextBlock>
+						</Button>
+					</Grid>
+
 				</Grid>
 			</Grid>
 		</Grid>
