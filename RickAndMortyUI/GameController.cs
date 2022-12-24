@@ -81,7 +81,7 @@ namespace RickAndMortyUI
                 BroadcastLoseAndWin(x => GetPlayerPerson(x) == failPerson);
             }
 
-            else if (allCharacters.Any(x => x.Player != null && x.Person == Person.Parasite))
+            else if (allCharacters.Any(x => x.Player == null && x.Person == Person.Parasite))
             {
                 RevealCharacters();
                 BroadcastLoseAndWin(x => GetPlayerPerson(x) == Person.Friend);
