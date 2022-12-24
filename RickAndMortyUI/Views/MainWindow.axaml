@@ -47,6 +47,7 @@
 			<Grid Name="gameGrid" ShowGridLines="False" ColumnDefinitions="0.2* * 2.6* * 0.2*" RowDefinitions="* 2* 2* *" IsVisible="{Binding Visible}" Opacity="{Binding Opacity}">
 				<TextBlock Name="gameText" Grid.Column="0" Grid.ColumnSpan="5" Classes="dimbo" FontSize="60" Foreground="#f0f0f0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding GameText}" ClipToBounds="True" TextTrimming="CharacterEllipsis"></TextBlock>
 
+
 				<Border Grid.Column="2" Grid.Row="1" Grid.RowSpan="2" Background="#4d000000" Padding="50" BorderBrush="#4d000000">
 					<ScrollViewer AllowAutoHide="True" DataContext="{Binding CharactersPanel}">
 						<Grid Name="charactersGrid" ShowGridLines="False" ColumnDefinitions="* * *" RowDefinitions="322.2">
@@ -61,6 +62,7 @@
 
 				<Border Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" CornerRadius="5" ClipToBounds="True" Margin="30" VerticalAlignment="Top" HorizontalAlignment="Left" DataContext="{Binding PlayerCharaterVms[0]}">
 					<Image Name="character1" Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+
 				</Border>
 				<Border Grid.Row="1" DataContext="{Binding PlayerIconVMs[0]}">
 					<Image Name="gamePlayer1" Source="{Binding Source}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Left" VerticalAlignment="Top"></Image>
@@ -68,6 +70,7 @@
 
 				<Border Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" CornerRadius="5" ClipToBounds="True" Margin="30" VerticalAlignment="Top" HorizontalAlignment="Left" DataContext="{Binding PlayerCharaterVms[1]}">
 					<Image Name="character2" Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+
 				</Border>
 				<Border Grid.Row="2" DataContext="{Binding PlayerIconVMs[1]}">
 					<Image Name="gamePlayer2" Source="{Binding Source}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Left" VerticalAlignment="Top"></Image>
@@ -75,6 +78,7 @@
 
 				<Border Grid.Column="3" Grid.Row="1" Grid.ColumnSpan="2" CornerRadius="5" ClipToBounds="True" Margin="30" VerticalAlignment="Top" HorizontalAlignment="Right" DataContext="{Binding PlayerCharaterVms[3]}">
 					<Image Name="character3" Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+
 				</Border>
 				<Border Grid.Row="1" Grid.Column="4" DataContext="{Binding PlayerIconVMs[3]}">
 					<Image Name="gamePlayer3" Source="{Binding Source}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Right" VerticalAlignment="Top"></Image>
@@ -82,6 +86,7 @@
 
 				<Border Grid.Column="3" Grid.Row="2" Grid.ColumnSpan="2" CornerRadius="5" ClipToBounds="True" Margin="30" VerticalAlignment="Top" HorizontalAlignment="Right" DataContext="{Binding PlayerCharaterVms[4]}">
 					<Image Name="character4" Source="{Binding Source}" IsVisible="{Binding IsVisible}"/>
+
 				</Border>
 				<Border Grid.Row="2" Grid.Column="4" DataContext="{Binding PlayerIconVMs[4]}">
 					<Image Name="gamePlayer4" Source="{Binding Source}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Right" VerticalAlignment="Top"></Image>
@@ -92,6 +97,7 @@
 				</Border>
 				<Border Grid.Column="3" Grid.Row="4" CornerRadius="2" ClipToBounds="True" DataContext="{Binding PersonVM}">
 					<Image Name="person" Source="{Binding Source}" IsVisible="{Binding IsVisible}" VerticalAlignment="Top"/>
+
 				</Border>
 
 				<Border Grid.Column="2" Grid.Row="4" DataContext="{Binding HandPanel}">
@@ -115,6 +121,7 @@
 							<TextBlock>Да</TextBlock>
 						</Button>
 					</Grid>
+
 				</Grid>
 			</Grid>
 		</Grid>

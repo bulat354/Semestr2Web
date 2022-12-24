@@ -1,22 +1,21 @@
-﻿using System;
+﻿using RickAndMortyLibrary.Messages;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RickAndMortyLibrary
+namespace RickAndMortyLibrary.Common
 {
     /// <summary>
     /// Класс для связи с клиентом или сервером.
     /// </summary>
     public interface IClient
     {
-        void Initialize(IMainUI ui);
+        void Connect(string ip, int port);
 
-        void Connect();
-
-        Task<object> Receive();
-        Task Send(object message);
+        Task<IMessage> Receive();
+        void Send(IMessage message);
 
         void Disconnect();
     }

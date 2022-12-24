@@ -111,7 +111,7 @@ namespace RickAndMortyUI.ViewModels
                     GameText = oldText;
             }
         }
-
+        
         public void ShowVoting()
         {
             OverlaySource = null;

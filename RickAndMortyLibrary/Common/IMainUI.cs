@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using RickAndMortyLibrary.Common;
+using RickAndMortyLibrary.ServerSide.Game;
 
-namespace RickAndMortyLibrary
+namespace RickAndMortyLibrary.Common
 {
     /// <summary>
     /// Интерфейс для главного экрана.
@@ -14,5 +14,8 @@ namespace RickAndMortyLibrary
     {
         Task WaitForCreating(out string ipAddress, out int port, out GameType gameType, out string userName);
         Task WaitForConnecting(out string ipAddress, out int port, out string userName);
+
+        Task<IPlayerUI> ToHostPlayerScreen();
+        Task<IPlayerUI> ToLocalPlayerScreen();
     }
 }

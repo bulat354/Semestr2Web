@@ -114,13 +114,14 @@ namespace RickAndMortyUI.Views
         /// When player click to Create
         /// </summary>
         /// <returns></returns>
+
         public void CreateClicked(bool isAdvanced)
         {
             if (!menuVM.ValidateInputs())
                 return;
 
             GoToWaitScreen(true);
-            Dispatcher.UIThread.Post(() => Title = "Õîñò");
+            Dispatcher.UIThread.Post(() => Title = "Ã•Ã®Ã±Ã²");
 
             GetInputs(out var ip, out var port);
             //var ip = "127.0.0.1";
@@ -174,7 +175,7 @@ namespace RickAndMortyUI.Views
                     client.Id = ids[count];
 
                     ShowAndBindPlayer(ids[count]);
-                    Task.Run(() => waitVM.ShowText("Ïðèâåòñòâóåì èãðîêà!", 3000));
+                    Task.Run(() => waitVM.ShowText("ÃÃ°Ã¨Ã¢Ã¥Ã²Ã±Ã²Ã¢Ã³Ã¥Ã¬ Ã¨Ã£Ã°Ã®ÃªÃ !", 3000));
 
                     count++;
                 }
@@ -228,12 +229,12 @@ namespace RickAndMortyUI.Views
             }
             catch
             {
-                menuVM.ErrorText = "Îøèáêà ïîäêëþ÷åíèÿ";
+                menuVM.ErrorText = "ÃŽÃ¸Ã¨Ã¡ÃªÃ  Ã¯Ã®Ã¤ÃªÃ«Ã¾Ã·Ã¥Ã­Ã¨Ã¿";
                 return;
             }
 
             GoToWaitScreen(false);
-            Dispatcher.UIThread.Post(() => Title = "Êëèåíò");
+            Dispatcher.UIThread.Post(() => Title = "ÃŠÃ«Ã¨Ã¥Ã­Ã²");
             CheckForNewPlayers();
             waiting.Cancel();
 
@@ -269,7 +270,7 @@ namespace RickAndMortyUI.Views
 
                 ShowAndBindPlayer(msg.ToInt());
 
-                Task.Run(() => waitVM.ShowText("Íîâûé èãðîê!", 3000));
+                Task.Run(() => waitVM.ShowText("ÃÃ®Ã¢Ã»Ã© Ã¨Ã£Ã°Ã®Ãª!", 3000));
             }
         }
 
@@ -364,7 +365,7 @@ namespace RickAndMortyUI.Views
             menuVM.Reset();
             menuVM.Appear();
 
-            Dispatcher.UIThread.Post(() => Title = "Ãëàâíîå ìåíþ");
+            Dispatcher.UIThread.Post(() => Title = "Ð“Ð»Ð°Ð²Ð½Ð¾Ðµ Ð¼ÐµÐ½ÑŽ");
         }
 
         /// <summary>

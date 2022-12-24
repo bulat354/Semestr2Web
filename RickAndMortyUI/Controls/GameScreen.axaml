@@ -1,0 +1,65 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:RickAndMortyUI.Controls">
+  <Design.PreviewWith>
+    <controls:GameScreen Background="Black"/>
+  </Design.PreviewWith>
+
+  <Style Selector="controls|GameScreen">
+	  <Setter Property="Text" Value="Раунд 4"></Setter>
+    <Setter Property="Template">
+      <ControlTemplate>
+		  <Grid>
+			  <StackPanel HorizontalAlignment="Center" VerticalAlignment="Stretch">
+				  <TextBlock Classes="dimbo" FontSize="100" Foreground="#f0f0f0" TextAlignment="Center" Text="{TemplateBinding Text}"></TextBlock>
+
+				  <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Height="630">
+					  <StackPanel>
+						  <StackPanel Orientation="Horizontal">
+							  <Image Margin="50" Width="150" Source="{Binding PlayerCharacters[0].Image, RelativeSource={RelativeSource TemplatedParent}}" IsVisible="{Binding PlayerCharacters[0].IsVisible, RelativeSource={RelativeSource TemplatedParent}}"></Image>
+							  <Image Source="{Binding Players[0].Image, RelativeSource={RelativeSource TemplatedParent}}" IsVisible="{Binding Players[0].IsVisible, RelativeSource={RelativeSource TemplatedParent}}" Margin="5" Width="75" VerticalAlignment="Top" RenderTransform="translateX(-250px)"></Image>
+						  </StackPanel>
+						  <StackPanel Orientation="Horizontal">
+							  <Image Source="{Binding PlayerCharacters[1].Image, RelativeSource={RelativeSource TemplatedParent}}" IsVisible="{Binding PlayerCharacters[1].IsVisible, RelativeSource={RelativeSource TemplatedParent}}" Margin="50" Width="150"></Image>
+							  <Image Source="{Binding Players[1].Image, RelativeSource={RelativeSource TemplatedParent}}" IsVisible="{Binding Players[1].IsVisible, RelativeSource={RelativeSource TemplatedParent}}" Margin="5" Width="75" VerticalAlignment="Top"  RenderTransform="translateX(-250px)"></Image>
+						  </StackPanel>
+					  </StackPanel>
+					  <ScrollViewer Height="500" Margin="80 0" ZIndex="0" ClipToBounds="False">
+						  <WrapPanel Name="CharactersPanel" Width="520" Margin="75" >
+							  <!--<Image Classes="char" Source="{Binding Image}" IsVisible="{Binding IsVisible}" Width="150" Margin="10"></Image>-->
+						  </WrapPanel>
+					  </ScrollViewer>
+					  <StackPanel>
+						  <StackPanel Orientation="Horizontal">
+							  <Image Source="{Binding Players[2].Image, RelativeSource={RelativeSource TemplatedParent}}" IsVisible="{Binding Players[2].IsVisible, RelativeSource={RelativeSource TemplatedParent}}" Margin="5" Width="75" VerticalAlignment="Top"  RenderTransform="translateX(250px)" ZIndex="1"></Image>
+							  <Image Source="{Binding PlayerCharacters[2].Image, RelativeSource={RelativeSource TemplatedParent}}" IsVisible="{Binding PlayerCharacters[2].IsVisible, RelativeSource={RelativeSource TemplatedParent}}" Margin="50" Width="150"></Image>
+						  </StackPanel>
+						  <StackPanel Orientation="Horizontal">
+							  <Image Source="{Binding Players[3].Image, RelativeSource={RelativeSource TemplatedParent}}" IsVisible="{Binding Players[3].IsVisible, RelativeSource={RelativeSource TemplatedParent}}" Margin="5" Width="75" VerticalAlignment="Top"  RenderTransform="translateX(250px)" ZIndex="1"></Image>
+							  <Image Source="{Binding PlayerCharacters[3].Image, RelativeSource={RelativeSource TemplatedParent}}" IsVisible="{Binding PlayerCharacters[3].IsVisible, RelativeSource={RelativeSource TemplatedParent}}" Margin="50" Width="150"></Image>
+						  </StackPanel>
+					  </StackPanel>
+				  </StackPanel>
+
+				  <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="25">
+					  <Border Classes="card moved">
+						  <Image Source="{Binding PlayerCharacters[4].Image, RelativeSource={RelativeSource TemplatedParent}}" IsVisible="{Binding PlayerCharacters[4].IsVisible, RelativeSource={RelativeSource TemplatedParent}}" Width="150"></Image>
+					  </Border>
+					  <StackPanel Name="HandPanel" Margin="150 0" Orientation="Horizontal" Width="600">
+					  </StackPanel>
+					  <Border VerticalAlignment="Top">
+						  <Image Source="{Binding Person.Image, RelativeSource={RelativeSource TemplatedParent}}" IsVisible="{Binding Person.IsVisible, RelativeSource={RelativeSource TemplatedParent}}" Width="150"></Image>
+					  </Border>
+				  </StackPanel>
+			  </StackPanel>
+			  <Border Background="#4d000000" IsHitTestVisible="False" IsVisible="{TemplateBinding OverlayVisible}">
+				  <Image Source="{TemplateBinding OverlayImage}" IsHitTestVisible="False" Opacity="0.75" Width="300" HorizontalAlignment="Center" VerticalAlignment="Center"></Image>
+			  </Border>
+		  </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+	<StyleInclude Source="/Styles/GameStyles.axaml"></StyleInclude>
+	<StyleInclude Source="/Styles/TextStyles.axaml"></StyleInclude>
+</Styles>

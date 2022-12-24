@@ -4,23 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DPTPLibrary;
+using RickAndMortyLibrary.Common;
+using RickAndMortyLibrary.ServerSide.Game;
 
-namespace RickAndMortyLibrary
+namespace RickAndMortyLibrary.ServerSide
 {
     /// <summary>
     /// Используется для создания хоста.
     /// </summary>
     public interface IServer
     {
-        void Initialize(IMainUI ui);
-
-        void Start();
-
-        Task WaitForPlayers();
-
-        void StartGame();
-        void CloseGame();
-
-        void Close();
+        Task Start(IMainUI ui);
     }
 }
