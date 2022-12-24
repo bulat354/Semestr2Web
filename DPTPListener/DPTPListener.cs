@@ -24,7 +24,7 @@ namespace DPTPLibrary
 
         public DPTPClient AcceptClient()
         {
-            var client = await _listener.AcceptTcpClientAsync();
+            var client = _listener.AcceptTcpClient();
             return new DPTPClient(client);
         }
 
