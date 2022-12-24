@@ -67,21 +67,21 @@ FIELD STRUCTURE
             return packet.ToArray();
         }
 
-        public static async Task<DPTPPacket?> ParseAsync(Stream stream)
+        public static DPTPPacket? Parse(Stream stream)
         {
-            var encrypted = await ParseEncrypting(stream);
+            var encrypted = ParseEncrypting(stream);
             if (encrypted == null)
                 return null;
 
             var xpacket = new DPTPPacket();
 
-            xpacket = await ParseId(stream, xpacket);
-            xpacket = await ParseFields(stream, xpacket, encrypted.Value);
+            xpacket = ParseId(stream, xpacket);
+            xpacket = ParseFields(stream, xpacket, encrypted.Value);
 
             return xpacket;
         }
 
-        private static async Task<DPTPPacket?> ParseFields(Stream stream, DPTPPacket? xpacket, bool? encrypted)
+        private static DPTPPacket? ParseFields(Stream stream, DPTPPacket? xpacket, bool? encrypted)
         {
             if (encrypted == null || xpacket == null)
                 return null;
@@ -91,7 +91,7 @@ FIELD STRUCTURE
 
             while (true)
             {
-                if (await stream.ReadAsync(info, 0, info.Length) < 2)
+                if (stream.Read(info, 0, info.Length) < 2)
                     return null;
 
                 var id = info[0];
@@ -101,7 +101,7 @@ FIELD STRUCTURE
                     return encrypted.Value ? DecryptPacket(xpacket) : xpacket;
 
                 contents = size == 0 ? null : new byte[size];
-                if (contents != null && await stream.ReadAsync(contents, 0, size) < size)
+                if (contents != null && stream.Read(contents, 0, size) < size)
                     return null;
 
                 xpacket.Fields.Add(new DPTPPacketField
@@ -113,13 +113,13 @@ FIELD STRUCTURE
             }
         }
 
-        private static async Task<DPTPPacket?> ParseId(Stream stream, DPTPPacket xpacket)
+        private static DPTPPacket? ParseId(Stream stream, DPTPPacket xpacket)
         {
             if (xpacket == null)
                 return null;
 
             var id = new byte[2];
-            if (await stream.ReadAsync(id, 0, id.Length) < 2)
+            if (stream.Read(id, 0, id.Length) < 2)
                 return null;
 
             xpacket.PacketType = id[0];
@@ -128,10 +128,10 @@ FIELD STRUCTURE
             return xpacket;
         }
 
-        private static async Task<bool?> ParseEncrypting(Stream stream)
+        private static bool? ParseEncrypting(Stream stream)
         {
             var headers = new byte[3];
-            if (await stream.ReadAsync(headers, 0, headers.Length) < 3)
+            if (stream.Read(headers, 0, headers.Length) < 3)
                 return null;
 
             var encrypted = false;

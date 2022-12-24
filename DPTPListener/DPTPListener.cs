@@ -22,9 +22,15 @@ namespace DPTPLibrary
             _listener = new TcpListener(localaddr, port);
         }
 
-        public async Task<DPTPClient> AcceptClientAsync()
+        public DPTPClient AcceptClient()
         {
-            var client = _listener.AcceptTcpClient();
+            var client = await _listener.AcceptTcpClientAsync();
+            return new DPTPClient(client);
+        }
+
+        public async Task<DPTPClient?> AcceptClientAsync(CancellationToken token)
+        {
+            var client = await _listener.AcceptTcpClientAsync(token);
             return new DPTPClient(client);
         }
 
