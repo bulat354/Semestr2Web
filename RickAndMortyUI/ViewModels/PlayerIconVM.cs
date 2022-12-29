@@ -19,6 +19,20 @@ namespace RickAndMortyUI.ViewModels
             set { this.RaiseAndSetIfChanged(ref _isVisible, value); }
         }
 
+        private bool _isFirst = false;
+        public bool IsFirst
+        {
+            get { return _isFirst; }
+            set { this.RaiseAndSetIfChanged(ref _isFirst, value); }
+        }
+
+        private bool _isHisTurn = false;
+        public bool IsHisTurn
+        {
+            get { return _isHisTurn; }
+            set { this.RaiseAndSetIfChanged(ref _isHisTurn, value); }
+        }
+
         private IImage _source;
         public IImage Source
         {

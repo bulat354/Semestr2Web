@@ -19,14 +19,10 @@ namespace RickAndMortyUI
             Id = id;
         }
 
-        public StringMessage? ProcessMessage(StringMessage message, bool isRequest = false)
+        public StringMessage? ProcessMessage(StringMessage message)
         {
             _client.SendMessage(message);
-
-            if (isRequest)
-                return _client.WaitForAny();
-
-            return null;
+            return _client.WaitForAny();
         }
     }
 }

@@ -8,6 +8,7 @@ using ReactiveUI;
 using Avalonia.Media;
 using Avalonia.Input;
 using Avalonia.Controls;
+using Avalonia.Threading;
 
 namespace RickAndMortyUI.ViewModels
 {
@@ -17,6 +18,14 @@ namespace RickAndMortyUI.ViewModels
         public HandPanelVM HandPanel { get; } = new HandPanelVM();
 
         public CharacterVM[] PlayerCharaterVms { get; } = new CharacterVM[]
+        {
+            new CharacterVM(),
+            new CharacterVM(),
+            new CharacterVM(),
+            new CharacterVM(),
+            new CharacterVM()
+        };
+        public CharacterVM[] PlayerActionVms { get; } = new CharacterVM[]
         {
             new CharacterVM(),
             new CharacterVM(),
@@ -98,18 +107,9 @@ namespace RickAndMortyUI.ViewModels
             }
         }
 
-        public async Task ShowText(string text, int time = -1)
+        public void ShowText(string text)
         {
-            if (time < 0)
-                GameText = text;
-            else
-            {
-                var oldText = GameText;
-                GameText = text;
-                await Task.Delay(time);
-                if (GameText == text)
-                    GameText = oldText;
-            }
+            GameText = text;
         }
         
         public void ShowVoting()

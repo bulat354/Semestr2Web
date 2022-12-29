@@ -15,8 +15,6 @@ namespace RickAndMortyUI
 {
     public class GameController
     {
-        public const int WaitTime = 1500;
-
         public bool IsAdvancedMode { get; set; } = false;
 
         public GameVM Game { get; set; }
@@ -124,7 +122,7 @@ namespace RickAndMortyUI
                     Broadcast(new StringMessage(MessageFirstGoal.Person, $"{character.PersonId} {character.PlayerId}", MessageSecondGoal.Attach));
                     if (character.Person == Person.Friend)
                     {
-                        Broadcast(GetPlayerName(player.Id) + $" убил друга!", true);
+                        Broadcast(GetPlayerName(player.Id) + $" убил друга!");
                         failPerson = GetPlayerPerson(player);
                         break;
                     }
@@ -180,7 +178,11 @@ namespace RickAndMortyUI
             killedCharacters = new List<Character>();
 
             Broadcast(isLast ? "Последний раунд" : $"Раунд {round}");
+            Broadcast(new StringMessage(MessageFirstGoal.Round, PlayerControllers[firstPlayer].Id.ToString()));//first player id
             var cards = WaitForActions();
+            for (int i = 0; i < cards.Length; i++)
+                if (cards[i] != null)
+                    Broadcast(new StringMessage(MessageFirstGoal.Action, $"{PlayerControllers[i].Id} {cards[i].Id}", MessageSecondGoal.Show));//reveal selected cards
             if (!isLast)
                 foreach (var player in PlayerControllers)
                     GiveCardToPlayer(player);
@@ -197,6 +199,8 @@ namespace RickAndMortyUI
             }
             round++;
 
+            Broadcast(new StringMessage(MessageFirstGoal.Action, null, MessageSecondGoal.Remove));
+
             if (!isLast)
                 if (!AddCharacterToTable())
                     return false;
@@ -210,6 +214,7 @@ namespace RickAndMortyUI
 
         private bool StartTurn(IPlayerController player, ActionCard card)
         {
+            Broadcast(new StringMessage(MessageFirstGoal.Turn, player.Id.ToString()));
             var res = ProcessAction(player, card);
             discardPile.Add(card);
             return res;
@@ -217,7 +222,8 @@ namespace RickAndMortyUI
 
         private bool ProcessAction(IPlayerController player, ActionCard card)
         {
-            Broadcast($"{GetPlayerName(player.Id)} ходит картой {card.Name}");
+            Broadcast(new StringMessage(MessageFirstGoal.Action, $"{player.Id} {card.Id}", MessageSecondGoal.Show));
+            Broadcast($"{GetPlayerName(player.Id)} ходит");
 
             switch (card.Id)
             {
@@ -261,10 +267,9 @@ namespace RickAndMortyUI
         private void ProcessRick(IPlayerController player)
         {
             if (personsPack.Count > 0)
-                Send(player, "Следующий персонаж - " + personsPack.Peek().Name);
+                Send(player, new StringMessage(MessageFirstGoal.Person, personsPack.Peek().Id.ToString(), MessageSecondGoal.Show));
             else
-                Send(player, "Персонажи закончились");
-            Thread.Sleep(WaitTime);
+                Send(player, "Колода личностей пуста");
         }
 
         private bool ProcessBeth(IPlayerController player, ActionCard card)
@@ -282,7 +287,7 @@ namespace RickAndMortyUI
             Send(player, "Выберите другого игрока");
             var another = WaitForSelectPlayer(player);
 
-            Send(another, "Выберите жертву");
+            Send(another, "Вы должны выбрать жертву");
             var character = WaitForSelectCharacter(another, x => x.PlayerId != another.Id && IsKillable(x, player));
             if (character == null)
                 return true;
@@ -319,6 +324,7 @@ namespace RickAndMortyUI
                 var character = WaitForSelectCharacter(player, x => x.PlayerId != player.Id && IsKillable(x, player));
                 if (character == null)
                     return true;
+                actionAttached[index] = false;
 
                 return KillCharacter(player, character);
             }
@@ -401,12 +407,14 @@ namespace RickAndMortyUI
         #region Helper methods
         private Character? WaitForSelectCharacter(IPlayerController player, Func<Character, bool> predicate)
         {
+            Broadcast($"{GetPlayerName(player.Id)} выбирает персонажа");
+
             var characters = this.allCharacters.Where(predicate);
             if (!characters.Any())
                 return null;
 
             var message = player.ProcessMessage(
-                new StringMessage(MessageFirstGoal.Character, string.Join(' ', characters.Select(x => x.CardId.ToString()))), true);
+                new StringMessage(MessageFirstGoal.Character, string.Join(' ', characters.Select(x => x.CardId.ToString()))));
             if (message == null)
                 return null;
 
@@ -417,24 +425,25 @@ namespace RickAndMortyUI
         private ActionCard?[] WaitForActions()
         {
             Broadcast("Выберите действие");
-            var messages = WaitAll(new StringMessage(MessageFirstGoal.Action, null, MessageSecondGoal.None));
+            var message = new StringMessage(MessageFirstGoal.Action);
 
-            return messages
+            return WaitAll(message)
                 .Select(x => x == null ? null : CardsImporter.GetCard<ActionCard>(x.ToInt()))
                 .ToArray();
         }
 
         private IPlayerController WaitForSelectPlayer(IPlayerController player)
         {
-            var message = player.ProcessMessage(new StringMessage(MessageFirstGoal.Player, null), true);
+            Broadcast($"{GetPlayerName(player.Id)} выбирает игрока");
+            var message = player.ProcessMessage(new StringMessage(MessageFirstGoal.Player, null));
             return PlayerControllers.First(x => x.Id == message.ToInt());
         }
 
         private bool KillCharacter(IPlayerController player, Character character, bool hasAftermath = true)
         {
-            //steve take action card
             if (character.CardId == 11 && !character.Tag.HasFlag(CharacterTag.CanKill))
             {
+                Broadcast("Чудовище Франкенштейна не просто убить!");
                 character.Tag |= CharacterTag.CanKill;
                 return true;
             }
@@ -443,30 +452,43 @@ namespace RickAndMortyUI
             allCharacters.Remove(character);
             if (character.Player == null)
             {
-                Broadcast(new StringMessage(MessageFirstGoal.Character, character.CardId.ToString(), MessageSecondGoal.Remove));
+                if (character.CardId != 19)
+                {
+                    Broadcast(new StringMessage(MessageFirstGoal.Person, $"{character.CardId} {character.PersonId}", MessageSecondGoal.Add));
+                    Broadcast(new StringMessage(MessageFirstGoal.Character, character.CardId.ToString(), MessageSecondGoal.Remove));
+                }
             }
             else
             {
-                Broadcast(new StringMessage(MessageFirstGoal.Character, character.PlayerId.ToString(), MessageSecondGoal.Detach));
+                if (character.CardId != 19)
+                {
+                    Broadcast(new StringMessage(MessageFirstGoal.Person, $"{character.CardId} {character.PersonId}", MessageSecondGoal.Add));
+                    Broadcast(new StringMessage(MessageFirstGoal.Character, character.PlayerId.ToString(), MessageSecondGoal.Detach));
+                }
                 character.Player.ProcessMessage(new StringMessage(MessageFirstGoal.Person, null, MessageSecondGoal.Detach));
             }
 
             if (character.Person == Person.Parasite)
             {
                 if (character.CardId != 19)
+                {
                     Broadcast(GetPlayerName(player.Id) + " убил паразита!");
+                }
             }
             if (character.Person == Person.Friend)
             {
                 fails++;
                 failPerson = GetPlayerPerson(player);
                 if (character.CardId != 19 && fails < 4)
+                {
                     Broadcast(GetPlayerName(player.Id) + $" убил друга! Уже {fails} в гробу!");
+                }
                 else
                     Broadcast($"Кого убил {GetPlayerName(player.Id)} узнаете через 10 секунд");
 
                 if (character.CardId == 1)
                 {
+                    Broadcast("Ой-ой.");
                     fails = 4;
                     isGameOver = true;
                 }
@@ -478,7 +500,8 @@ namespace RickAndMortyUI
 
                 if (hasAftermath)
                 {
-                    var message = player.ProcessMessage(new StringMessage(MessageFirstGoal.Action), true);
+                    Send(player, "В наказание сбросьте карту");
+                    var message = player.ProcessMessage(new StringMessage(MessageFirstGoal.Action));
                     result &= AddCharacterToTable();
                 }
 
@@ -500,11 +523,16 @@ namespace RickAndMortyUI
                 Task.Run(() =>
                 {
                     Thread.Sleep(10000);
-                    Broadcast($"{character.Card.Name} был {character.Personality.Name}ом");
+                    Broadcast(new StringMessage(MessageFirstGoal.Person, $"{character.CardId} {character.PersonId}", MessageSecondGoal.Add));
+                    if (character.Player == null)
+                        Broadcast(new StringMessage(MessageFirstGoal.Character, character.CardId.ToString(), MessageSecondGoal.Remove));
+                    else
+                        Broadcast(new StringMessage(MessageFirstGoal.Character, character.PlayerId.ToString(), MessageSecondGoal.Detach));
                 });
             }
             else if (character.CardId == 0)
             {
+                Send(player, "Сыграйте еще одну карту");
                 var message = player.ProcessMessage(new StringMessage(MessageFirstGoal.Action));
                 if (message != null)
                 {
@@ -515,6 +543,7 @@ namespace RickAndMortyUI
             }
             else if (character.CardId == 20)
             {
+                Send(player, "Подсмотрите личность персонажа");
                 var selectedChar = WaitForSelectCharacter(player, x => x.Player != null && x.Player != player);
                 if (character != null)
                     player.ProcessMessage(new StringMessage(MessageFirstGoal.Person, $"{character.CardId} {character.PersonId}", MessageSecondGoal.Add));
@@ -582,6 +611,7 @@ namespace RickAndMortyUI
         private void ShuffleCharacterPersons(Character[] characters)
         {
             Broadcast("Перемешиваем личности");
+            Broadcast(new StringMessage(MessageFirstGoal.Character, string.Join(" ", characters.Select(x => x.CardId.ToString())), MessageSecondGoal.Shuffle));
             var random = new Random();
 
             for (int i = 0; i < characters.Length; i++)
@@ -598,10 +628,9 @@ namespace RickAndMortyUI
             return count >= PlayerControllers.Length / 2;
         }
 
-        private void Broadcast(string message, bool forTime = false)
+        private void Broadcast(string message)
         {
-            Thread.Sleep(WaitTime);
-            var msg = StringMessage.Create(MessageFirstGoal.Message, message, forTime ? MessageSecondGoal.ForTime : MessageSecondGoal.None);
+            var msg = StringMessage.Create(MessageFirstGoal.Message, message, MessageSecondGoal.None);
             Broadcast(msg);
         }
 
@@ -610,10 +639,13 @@ namespace RickAndMortyUI
         /// </summary>
         private void Broadcast(StringMessage message)
         {
-            foreach (var player in PlayerControllers)
-            {
-                player.ProcessMessage(message);
-            }
+            var tasks = PlayerControllers
+                .Select(x => Task.Run(() =>
+                {
+                    x.ProcessMessage(message);
+                }))
+                .ToArray();
+            Task.WaitAll(tasks);
         }
 
         private void Send(IPlayerController player, string message)
@@ -621,14 +653,19 @@ namespace RickAndMortyUI
             player.ProcessMessage(new StringMessage(MessageFirstGoal.Message, message));
         }
 
+        private void Send(IPlayerController player, StringMessage message)
+        {
+            player.ProcessMessage(message);
+        }
+
         private void BroadcastLoseAndWin(Func<IPlayerController, bool> predicateForLosers)
         {
             foreach (var player in PlayerControllers)
             {
                 if (predicateForLosers(player))
-                    player.ProcessMessage(new StringMessage(MessageFirstGoal.Message, "Вы проиграли!"));
+                    player.ProcessMessage(new StringMessage(MessageFirstGoal.GameOver, null, MessageSecondGoal.Lose));
                 else
-                    player.ProcessMessage(new StringMessage(MessageFirstGoal.Message, "Вы выиграли!"));
+                    player.ProcessMessage(new StringMessage(MessageFirstGoal.GameOver, null, MessageSecondGoal.Win));
             }
         }
 
@@ -643,19 +680,16 @@ namespace RickAndMortyUI
         private StringMessage?[] WaitAll(StringMessage message)
         {
             var tasks = PlayerControllers
-                .Select(x => Task.Run(() => x.ProcessMessage(message, true)))
+                .Select(x => Task.Run(() => x.ProcessMessage(message)))
                 .ToArray();
-            for (int i = 0; i < tasks.Length; i++)
-            {
-                tasks[i].Wait();
-            }
+            Task.WaitAll(tasks);
             return tasks.Select(x => x.Result).ToArray();
         }
 
         private StringMessage? WaitAny(StringMessage message)
         {
             var tasks = PlayerControllers
-                .Select(x => Task.Run(() => x.ProcessMessage(message, true)))
+                .Select(x => Task.Run(() => x.ProcessMessage(message)))
                 .ToArray();
             var index = Task.WaitAny(tasks);
             return tasks[index].Result;

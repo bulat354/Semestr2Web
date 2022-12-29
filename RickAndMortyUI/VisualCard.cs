@@ -18,12 +18,18 @@ namespace RickAndMortyUI
 
         public void MakeClickable()
         {
-            Control.MakeClickable();
+            if (Control is Image)
+                Control.Parent.MakeClickable();
+            else
+                Control.MakeClickable();
         }
 
         public void MakeUnclickable()
         {
-            Control.MakeUnclickable();
+            if (Control is Image)
+                Control.Parent.MakeUnclickable();
+            else
+                Control.MakeUnclickable();
         }
     }
 }

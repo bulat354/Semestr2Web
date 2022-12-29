@@ -13,7 +13,6 @@ using Avalonia.Data;
 using Avalonia.Controls.Shapes;
 using Avalonia.Animation;
 using Avalonia.Layout;
-using System.Security.Cryptography;
 using System.Threading;
 using Avalonia.Platform;
 using System.Collections.Generic;
@@ -85,6 +84,16 @@ namespace RickAndMortyUI.Views
             character4.PointerLeave += gameVM.OnPointerLeave;
             person.PointerEnter += gameVM.OnPointerEnter;
             person.PointerLeave += gameVM.OnPointerLeave;
+            action.PointerEnter += gameVM.OnPointerEnter;
+            action.PointerLeave += gameVM.OnPointerLeave;
+            action1.PointerEnter += gameVM.OnPointerEnter;
+            action1.PointerLeave += gameVM.OnPointerLeave;
+            action2.PointerEnter += gameVM.OnPointerEnter;
+            action2.PointerLeave += gameVM.OnPointerLeave;
+            action3.PointerEnter += gameVM.OnPointerEnter;
+            action3.PointerLeave += gameVM.OnPointerLeave;
+            action4.PointerEnter += gameVM.OnPointerEnter;
+            action4.PointerLeave += gameVM.OnPointerLeave;
             #endregion
 
             playerIcons = new List<VisualCard>()
@@ -252,7 +261,7 @@ namespace RickAndMortyUI.Views
         {
             for (int i = 0; i < 5; i++)
             {
-                var msg = client.WaitForMessage(MessageFirstGoal.Player | MessageFirstGoal.Timer, MessageSecondGoal.None | MessageSecondGoal.Stop);
+                var msg = client.WaitForAny();
 
                 if (msg == null)
                 {
@@ -285,11 +294,18 @@ namespace RickAndMortyUI.Views
 
                 if (message != null)
                 {
-                    var response = ProcessMessage(message, true);
+                    var response = ProcessMessage(message);
                     if (response != null)
+                    {
                         client.SendMessage(response);
+
+                        if (response.FirstGoal == MessageFirstGoal.GameOver)
+                            break;
+                    }
                 }
             }
+
+            GoToMainScreen();
         }
         #endregion
 
@@ -393,7 +409,7 @@ namespace RickAndMortyUI.Views
         /// <summary>
         /// Process message from server and send response if necessary
         /// </summary>
-        public StringMessage? ProcessMessage(StringMessage message, bool isRequest = false)
+        public StringMessage? ProcessMessage(StringMessage message)
         {
             switch (message.FirstGoal)
             {
@@ -406,18 +422,50 @@ namespace RickAndMortyUI.Views
                 case (MessageFirstGoal.Person):
                     ProcessPerson(message); break;
                 case (MessageFirstGoal.Message):
-                    ProcessMessage(message); break;
+                    ProcessText(message); break;
                 case (MessageFirstGoal.Voting):
                     return ProcessVoting(message);
+                case (MessageFirstGoal.Round):
+                    ProcessRound(message); break;
+                case (MessageFirstGoal.Turn):
+                    ProcessTurn(message); break;
+                case (MessageFirstGoal.GameOver):
+                    ProcessGameOver(message); break;
             }
 
-            return null;
+            return new StringMessage();
         }
 
-        public StringMessage? ProcessPlayer()
+        public void ProcessGameOver(StringMessage message)
         {
+            gameVM.ShowText(message.SecondGoal == MessageSecondGoal.Lose ? "Вы проиграли" : "Вы выиграли");
+            Thread.Sleep(3000);
+        }
+
+        public void ProcessRound(StringMessage message)
+        {
+            var id = message.ToInt();
+            foreach (var vm in gameVM.PlayerIconVMs)
+            {
+                vm.IsFirst = vm.Id == id;
+            }
+        }
+
+        public void ProcessTurn(StringMessage message)
+        {
+            var id = message.ToInt();
+            foreach (var vm in gameVM.PlayerIconVMs)
+            {
+                vm.IsHisTurn = vm.Id == id;
+            }
+        }
+
+        public StringMessage ProcessPlayer()
+        {
+            var players = playerIcons.Where(x => x.Control != null).ToArray();
+
             var src = new TaskCompletionSource<int>();
-            foreach (var item in playerIcons.Where(x => x.Control != null))
+            foreach (var item in players)
             {
                 var icon = item;
                 icon.MakeClickable();
@@ -427,19 +475,21 @@ namespace RickAndMortyUI.Views
                 };
             }
             src.Task.Wait();
-            playerIcons.Where(x => x.Control != null).ForEach(x => x.MakeUnclickable());
+            foreach (var player in players)
+                player.MakeUnclickable();
 
             return new StringMessage(MessageFirstGoal.Player, src.Task.Result.ToString());
         }
 
-        public void ProcessMessage(StringMessage message)
+        public void ProcessText(StringMessage message)
         {
-            var text = message.Message.Substring(0, Math.Min(45, message.Message.Length)) 
-                + (message.Message.Length > 45 ? "..." : "");
-            Task.Run(() => gameVM.ShowText(message.Message, message.SecondGoal == MessageSecondGoal.ForTime ? 3000 : -1));
+            var text = message.Message.Substring(0, Math.Min(50, message.Message.Length)) 
+                + (message.Message.Length > 50 ? "..." : "");
+            gameVM.ShowText(text);
+            Thread.Sleep(1000);
         }
 
-        public StringMessage? ProcessVoting(StringMessage message)
+        public StringMessage ProcessVoting(StringMessage message)
         {
             var src = new TaskCompletionSource<bool>();
 
@@ -461,7 +511,7 @@ namespace RickAndMortyUI.Views
             return StringMessage.Create(MessageFirstGoal.None, src.Task.Result ? "yes" : "no");
         }
 
-        public StringMessage? ProcessCharacter(StringMessage message)
+        public StringMessage ProcessCharacter(StringMessage message)
         {
             switch (message.SecondGoal)
             {
@@ -475,12 +525,14 @@ namespace RickAndMortyUI.Views
                     ProcessCharacterDetach(message); break;
                 case MessageSecondGoal.None:
                     return ProcessCharacterSelect(message);
+                case MessageSecondGoal.Shuffle:
+                    ProcessCharacterShuffle(message); break;
             }
 
-            return null;
+            return new StringMessage();
         }
 
-        private StringMessage? ProcessCharacterSelect(StringMessage message)
+        private StringMessage ProcessCharacterSelect(StringMessage message)
         {
             var ids = message.Message.Split(' ').Select(x => int.Parse(x)).ToArray();
             var cards = tableCharacters
@@ -552,7 +604,41 @@ namespace RickAndMortyUI.Views
             tableCharacters.Add(new VisualCard() { Control = control, Id = cardId, Vm = vm });
         }
 
-        public StringMessage? ProcessAction(StringMessage message)
+        private void ProcessCharacterShuffle(StringMessage message)
+        {
+            var ids = message.Message.Split(' ').Select(x => int.Parse(x)).ToArray();
+            var cards = tableCharacters
+                .Concat(playerCharacters)
+                .Where(x => ids.Contains(x.Id))
+                .ToArray();
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                foreach (var card in cards)
+                {
+                    card.Control.Classes.Add("slow");
+                    card.Control.Classes.Add("small");
+                }
+            });
+            Thread.Sleep(1000);
+            Dispatcher.UIThread.Post(() =>
+            {
+                foreach (var card in cards)
+                {
+                    card.Control.Classes.Remove("small");
+                }
+            });
+            Thread.Sleep(1000);
+            Dispatcher.UIThread.Post(() =>
+            {
+                foreach (var card in cards)
+                {
+                    card.Control.Classes.Remove("slow");
+                }
+            });
+        }
+
+        public StringMessage ProcessAction(StringMessage message)
         {
             switch (message.SecondGoal)
             {
@@ -564,9 +650,11 @@ namespace RickAndMortyUI.Views
                     ProcessActionRemove(message); break;
                 case MessageSecondGoal.None:
                     return ProcessActionSelect(message);
+                case MessageSecondGoal.Show:
+                    ProcessActionShow(message); break;
             }
 
-            return null;
+            return new StringMessage();
         }
 
         private void ProcessActionAttach(StringMessage message)
@@ -576,7 +664,7 @@ namespace RickAndMortyUI.Views
             AttachedAction = new VisualCard() { Id = cardId };
         }
 
-        private StringMessage? ProcessActionSelect(StringMessage message)
+        private StringMessage ProcessActionSelect(StringMessage message)
         {
             if (AttachedAction != null)
             {
@@ -610,7 +698,8 @@ namespace RickAndMortyUI.Views
 
         private void ProcessActionRemove(StringMessage message)
         {
-            throw new NotImplementedException();
+            foreach (var act in gameVM.PlayerActionVms)
+                act.Hide();
         }
 
         private void ProcessActionAdd(StringMessage message)
@@ -624,7 +713,21 @@ namespace RickAndMortyUI.Views
             handCards.Add(new VisualCard() { Control = control, Id = cardId, Vm = vm });
         }
 
-        public StringMessage? ProcessPerson(StringMessage message)
+        private void ProcessActionShow(StringMessage message)
+        {
+            var split = message.Message.Split(' ');
+            var id = int.Parse(split[0]);
+            var cardId = int.Parse(split[1]);
+            var card = CardsImporter.GetCard<ActionCard>(cardId);
+            var image = GetImage(card.ImagePath);
+
+            var index = gameVM.PlayerIconVMs.FirstIndex(x => x.Id == id);
+            var vm = gameVM.PlayerActionVms[index];
+            vm.Bind(image);
+            vm.Show();
+        }
+
+        public StringMessage ProcessPerson(StringMessage message)
         {
             switch (message.SecondGoal)
             {
@@ -633,13 +736,15 @@ namespace RickAndMortyUI.Views
                 case MessageSecondGoal.Detach:
                     ProcessPersonDetach(message); break;
                 case MessageSecondGoal.Add:
+                    ProcessPersonAdd(message); break;
+                case MessageSecondGoal.Show:
                     ProcessPersonShow(message); break;
             }
 
-            return null;
+            return new StringMessage();
         }
 
-        private void ProcessPersonShow(StringMessage message)
+        private void ProcessPersonAdd(StringMessage message)
         {
             var split = message.Message.Split(' ').Select(x => int.Parse(x)).ToArray();
             var cardId = split[0];
@@ -650,15 +755,23 @@ namespace RickAndMortyUI.Views
             var visual = tableCharacters.Concat(playerCharacters)
                 .FirstOrDefault(x => x.Id == cardId);
 
-            Task.Run(() =>
-            {
-                var oldImage = visual.Vm.Source;
-                visual.Vm.Bind(image);
-                visual.Vm.Show();
-                Thread.Sleep(3000);
-                if (visual != null)
-                    visual.Vm.Bind(oldImage);
-            });
+            var oldImage = visual.Vm.Source;
+            visual.Vm.Bind(image);
+            visual.Vm.Show();
+            Thread.Sleep(2000);
+            if (visual != null)
+                visual.Vm.Bind(oldImage);
+        }
+
+        private void ProcessPersonShow(StringMessage message)
+        {
+            var id = message.ToInt();
+            var card = CardsImporter.GetCard<PersonalityCard>(id);
+            var image = GetImage(card.ImagePath);
+
+            Dispatcher.UIThread.Post(() => pPack.Source = image);
+            Thread.Sleep(2000);
+            Dispatcher.UIThread.Post(() => pPack.Source = GetImage("images/personalityCards/personalityBackSide.jpg"));
         }
 
         private void ProcessPersonDetach(StringMessage message)

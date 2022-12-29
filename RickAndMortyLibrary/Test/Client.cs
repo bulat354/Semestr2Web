@@ -26,59 +26,8 @@ namespace RickAndMortyLibrary.Test
             _client = new DPTPClient(ip, port);
         }
 
-        private List<StringMessage> _readyMessages = new List<StringMessage>();
-
-        public StringMessage? WaitForMessage(MessageFirstGoal firstGoal, MessageSecondGoal secondGoal)
-        {
-            lock (_readyMessages)
-            {
-                foreach (var message in _readyMessages)
-                {
-                    if (firstGoal.HasFlag(message.FirstGoal) && secondGoal.HasFlag(message.SecondGoal))
-                    {
-                        _readyMessages.Remove(message);
-                        return message;
-                    }
-                }
-            }
-
-            try
-            {
-                while (true)
-                {
-                    var packet = _client.ReceivePacket();
-                    if (packet != null)
-                    {
-                        var msg = StringMessage.Parse(packet);
-                        if (msg != null)
-                        {
-                            if (firstGoal.HasFlag(msg.FirstGoal) && secondGoal.HasFlag(msg.SecondGoal))
-                                return msg;
-                            else
-                                lock (_readyMessages)
-                                    _readyMessages.Add(msg);
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
         public StringMessage? WaitForAny()
         {
-            lock (_readyMessages)
-            {
-                if (_readyMessages.Count > 0)
-                {
-                    var message = _readyMessages[0];
-                    _readyMessages.RemoveAt(0);
-                    return message;
-                }
-            }
-
             try
             {
                 while (true)

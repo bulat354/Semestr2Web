@@ -11,6 +11,6 @@ namespace RickAndMortyUI
     {
         public int Id { get; }
 
-        StringMessage? ProcessMessage(StringMessage message, bool isRequest = false);
+        StringMessage ProcessMessage(StringMessage message);
     }
 }

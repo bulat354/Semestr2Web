@@ -28,7 +28,7 @@ namespace RickAndMortyUI
             });
         }
 
-        public static void MakeClickable(this Control control)
+        public static void MakeClickable(this IControl control)
         {
             Dispatcher.UIThread.Post(() =>
             {
@@ -36,7 +36,7 @@ namespace RickAndMortyUI
             });
         }
 
-        public static void MakeUnclickable(this Control control)
+        public static void MakeUnclickable(this IControl control)
         {
             Dispatcher.UIThread.Post(() =>
             {
