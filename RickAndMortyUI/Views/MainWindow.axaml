@@ -8,7 +8,7 @@
         x:Class="RickAndMortyUI.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         Title="RickAndMortyUI"
-		WindowState="Maximized"
+		WindowState="FullScreen"
 		>
     <Design.DataContext>
         <vm:MainWindowViewModel/>
